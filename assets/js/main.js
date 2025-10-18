@@ -7,7 +7,7 @@
 // Application Initialization
 // ==========================================================================
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     console.log('🌊 HydroFlujo iniciando...');
 
     // Hide loading screen after everything is ready
@@ -25,17 +25,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1500);
     }
 
-    // Initialize data (load CSV data)
-    DataManager.loadCSVData();
-    console.log('📊 Cargando datos desde CSV...');
-
-    // Initialize map
+    // Initialize map first so DataManager can add markers safely
     MapManager.initialize();
-    console.log('🗺️ Mapa inicializado');
+    console.log('�️ Mapa inicializado');
 
-    // Initialize UI
+    // Initialize UI (panels, buttons, legend)
     UIManager.initialize();
     console.log('🎨 Interfaz inicializada');
+
+    // Load CSV data (await so subsequent steps run after data is loaded)
+    await DataManager.loadCSVData();
+    console.log('📊 Datos CSV cargados');
 
     // Setup main report button
     const addReportBtn = document.getElementById('add-report-btn');
@@ -59,14 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
         timePeriodSelect.addEventListener('change', ChartManager.updateTemporalChart);
     }
 
-    // Initialize all incidents on map
-    AppState.incidents.forEach(incident => {
-        MapManager.addIncidentToMap(incident);
-    });
-
-    // Update charts and statistics
-    ChartManager.updateCharts();
-    Utils.updateStatsDisplays();
+    // Charts and stats are updated by DataManager.loadCSVData();
     
     // Setup periodic updates
     setupPeriodicUpdates();

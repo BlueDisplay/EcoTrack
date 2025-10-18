@@ -182,9 +182,9 @@ const DataManager = {
             titulo: row.titulo,
             direccion: row.direccion_detectada,
             colonia: row.colonia,
-            lat: parseFloat(row.lat),
-            lon: parseFloat(row.lon),
-            mm_lluvia: parseInt(row.mm_lluvia_reportados) || 0,
+            lat: row.lat ? parseFloat(row.lat) : null,
+            lon: row.lon ? parseFloat(row.lon) : null,
+            mm_lluvia: row.mm_lluvia_reportados ? parseFloat(row.mm_lluvia_reportados) : 0,
             afectaciones: row.afectaciones_reportadas,
             gravedad: row.gravedad,
             medio: row.medio,
@@ -208,14 +208,21 @@ const DataManager = {
             const csvData = DataManager.parseCSV(csvText);
             const incidents = DataManager.convertCSVToIncidents(csvData);
             
-            // Replace existing incidents with CSV data
-            AppState.incidents = incidents;
-            
+            // Filter and validate incidents with coordinates
+            const validIncidents = incidents.filter((inc) => {
+                const valid = typeof inc.lat === 'number' && !isNaN(inc.lat) && typeof inc.lon === 'number' && !isNaN(inc.lon);
+                if (!valid) {
+                    console.warn('Incidente omitido por coordenadas inválidas:', inc.id, inc.titulo);
+                }
+                return valid;
+            });
+
+            // Replace existing incidents with validated CSV data
+            AppState.incidents = validIncidents;
+
             // Update map and UI
             MapManager.clearIncidents();
-            incidents.forEach(incident => {
-                MapManager.addIncidentToMap(incident);
-            });
+            validIncidents.forEach(incident => MapManager.addIncidentToMap(incident));
             
             ChartManager.updateCharts();
             Utils.updateStatsDisplays();
@@ -360,8 +367,14 @@ const MapManager = {
 
     // Add incident to map
     addIncidentToMap: (incident) => {
-        const marker = L.marker([incident.lat, incident.lon], { 
-            icon: MapManager.getIconBySeverity(incident.gravedad) 
+        // Defensive checks
+        if (!incident || typeof incident.lat !== 'number' || typeof incident.lon !== 'number' || isNaN(incident.lat) || isNaN(incident.lon)) {
+            console.warn('Intento de añadir incidente con coordenadas inválidas:', incident && incident.id);
+            return null;
+        }
+
+        const marker = L.marker([incident.lat, incident.lon], {
+            icon: MapManager.getIconBySeverity(incident.gravedad)
         });
         
         marker.addTo(AppState.map)
@@ -369,9 +382,10 @@ const MapManager = {
                   <div class="p-4 max-w-sm">
                       <h3 class="font-bold text-sm mb-2">${incident.titulo}</h3>
                       <div class="space-y-1 text-xs text-slate-600">
-                          <p><i class="fas fa-map-marker-alt w-4"></i> ${incident.colonia}</p>
+                          <p><i class="fas fa-map-marker-alt w-4"></i> ${incident.direccion || incident.colonia || 'Ubicación no especificada'}</p>
                           <p><i class="fas fa-calendar w-4"></i> ${Utils.formatDate(incident.fecha_evento)}</p>
-                          <p><i class="fas fa-tint w-4"></i> ${incident.mm_lluvia} mm</p>
+                          <p><i class="fas fa-tint w-4"></i> ${incident.mm_lluvia || 0} mm</p>
+                          ${incident.medio ? `<p class="truncate"><i class="fas fa-newspaper w-4"></i> Fuente: ${incident.medio}</p>` : ''}
                       </div>
                       <div class="mt-2">
                           <span class="inline-block px-2 py-1 text-xs rounded-full ${
