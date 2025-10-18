@@ -1,6 +1,6 @@
 /*
- * HydroFlujo - Aplicación Principal
- * Sistema de monitoreo colaborativo de riesgos hidrometeorológicos
+ * EcoTrack - Aplicación Principal
+ * Plataforma de monitoreo ambiental integral
  * Hermosillo, Sonora - México
  */
 
@@ -740,9 +740,256 @@ const ChartManager = {
     }
 };
 
+// ==========================================================================
+// Mobile Interface Manager
+// ==========================================================================
+
+const MobileManager = {
+    // Initialize mobile interactions
+    init() {
+        this.setupBottomNavigation();
+        this.setupMobilePanel();
+        this.setupMobileControls();
+        this.setupTouchInteractions();
+    },
+
+    // Setup bottom navigation
+    setupBottomNavigation() {
+        const navItems = {
+            'mobile-nav-map': () => this.navigateToSection('mapas'),
+            'mobile-nav-stats': () => this.navigateToSection('estadisticas'),
+            'mobile-nav-add': () => this.showAddReportModal(),
+            'mobile-nav-layers': () => this.toggleLayersPanel(),
+            'mobile-nav-historico': () => this.navigateToSection('historico')
+        };
+
+        Object.entries(navItems).forEach(([id, handler]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', handler);
+            }
+        });
+    },
+
+    // Setup mobile sliding panel
+    setupMobilePanel() {
+        const overlay = document.getElementById('mobile-info-overlay');
+        const panel = document.getElementById('mobile-info-panel');
+        const closeBtn = document.getElementById('close-mobile-panel');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hideMobilePanel());
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => this.hideMobilePanel());
+        }
+
+        // Add swipe down to close functionality
+        if (panel) {
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+
+            panel.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+            });
+
+            panel.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+
+                if (deltaY > 0) {
+                    panel.style.transform = `translateY(${Math.min(deltaY, 100)}px)`;
+                }
+            });
+
+            panel.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+
+                const deltaY = currentY - startY;
+                if (deltaY > 100) {
+                    this.hideMobilePanel();
+                } else {
+                    panel.style.transform = 'translateY(0)';
+                }
+            });
+        }
+    },
+
+    // Setup mobile controls
+    setupMobileControls() {
+        // Mobile action buttons
+        const mobileAddBtn = document.getElementById('mobile-add-report-btn');
+        const mobileExportBtn = document.getElementById('mobile-export-btn');
+        const mobileShareBtn = document.getElementById('mobile-share-btn');
+
+        if (mobileAddBtn) {
+            mobileAddBtn.addEventListener('click', () => this.showAddReportModal());
+        }
+
+        if (mobileExportBtn) {
+            mobileExportBtn.addEventListener('click', () => DataManager.exportData());
+        }
+
+        if (mobileShareBtn) {
+            mobileShareBtn.addEventListener('click', () => this.shareMap());
+        }
+    },
+
+    // Setup touch interactions
+    setupTouchInteractions() {
+        // Add touch-friendly hover states
+        const touchElements = document.querySelectorAll('.mobile-nav-item, .mobile-nav-item-special');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', () => {
+                element.classList.add('touch-active');
+            });
+            
+            element.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    element.classList.remove('touch-active');
+                }, 150);
+            });
+        });
+    },
+
+    // Navigate to section
+    navigateToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+            
+            let navItemId = 'mobile-nav-map'; // default
+            if (sectionId === 'estadisticas') navItemId = 'mobile-nav-stats';
+            else if (sectionId === 'historico') navItemId = 'mobile-nav-historico';
+            else if (sectionId === 'mapas') navItemId = 'mobile-nav-map';
+            
+            this.updateActiveNavItem(navItemId);
+        }
+    },
+
+    // Update active navigation item
+    updateActiveNavItem(activeId) {
+        document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            item.classList.remove('mobile-nav-active');
+        });
+        
+        const activeItem = document.getElementById(activeId);
+        if (activeItem) {
+            activeItem.classList.add('mobile-nav-active');
+        }
+    },
+
+    // Show mobile info panel
+    showMobilePanel(content = null) {
+        const overlay = document.getElementById('mobile-info-overlay');
+        const panel = document.getElementById('mobile-info-panel');
+        const contentContainer = document.getElementById('mobile-panel-content');
+
+        if (content && contentContainer) {
+            contentContainer.innerHTML = content;
+        }
+
+        if (overlay && panel) {
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.add('opacity-100');
+                panel.classList.remove('translate-y-full');
+            }, 10);
+        }
+    },
+
+    // Hide mobile info panel
+    hideMobilePanel() {
+        const overlay = document.getElementById('mobile-info-overlay');
+        const panel = document.getElementById('mobile-info-panel');
+
+        if (overlay && panel) {
+            overlay.classList.remove('opacity-100');
+            panel.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+        }
+    },
+
+    // Show add report modal
+    showAddReportModal() {
+        // This will integrate with existing modal functionality
+        const addBtn = document.getElementById('add-report-btn');
+        if (addBtn) {
+            addBtn.click();
+        }
+    },
+
+    // Toggle layers panel
+    toggleLayersPanel() {
+        const layersControl = document.querySelector('.leaflet-control-layers');
+        if (layersControl) {
+            layersControl.click();
+        }
+    },
+
+    // Show info panel
+    showInfoPanel() {
+        // Show current map info or help
+        const infoContent = `
+            <div class="space-y-4">
+                <div class="text-center">
+                    <i class="fas fa-map-marked-alt text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">EcoTrack Hermosillo</h3>
+                    <p class="text-gray-600 text-sm">Plataforma de monitoreo ambiental integral</p>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <h4 class="font-medium mb-2">Cómo usar:</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Navega el mapa para ver eventos reportados</li>
+                        <li>• Toca los marcadores para ver detalles</li>
+                        <li>• Usa el botón + para reportar nuevos eventos</li>
+                        <li>• Cambia entre capas del mapa</li>
+                    </ul>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <p class="text-xs text-gray-500">
+                        Total de eventos: ${AppState.incidents.length}<br>
+                        Última actualización: ${new Date().toLocaleString('es-MX')}
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        this.showMobilePanel(infoContent);
+    },
+
+    // Share map functionality
+    shareMap() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'EcoTrack Hermosillo',
+                text: 'Plataforma de monitoreo ambiental integral para Hermosillo',
+                url: window.location.href
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Enlace copiado al portapapeles');
+            });
+        }
+    }
+};
+
 // Export for use in other files
 window.AppState = AppState;
 window.Utils = Utils;
 window.DataManager = DataManager;
 window.MapManager = MapManager;
 window.ChartManager = ChartManager;
+window.MobileManager = MobileManager;

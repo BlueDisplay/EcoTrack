@@ -389,10 +389,16 @@ const UIManager = {
     showWelcomePanel: () => {
         AppState.currentView = 'welcome';
         const infoPanelContent = document.getElementById('info-panel-content');
+        const mobileContent = document.getElementById('mobile-panel-content');
         const addReportBtn = document.getElementById('add-report-btn');
         
+        const welcomeContent = UITemplates.welcomePanel();
+        
         if (infoPanelContent) {
-            infoPanelContent.innerHTML = UITemplates.welcomePanel();
+            infoPanelContent.innerHTML = welcomeContent;
+        }
+        if (mobileContent) {
+            mobileContent.innerHTML = welcomeContent;
         }
         if (addReportBtn) {
             addReportBtn.classList.remove('hidden');
@@ -405,14 +411,36 @@ const UIManager = {
     displayIncidentDetails: (incident) => {
         AppState.currentView = 'details';
         const infoPanelContent = document.getElementById('info-panel-content');
+        const mobileContent = document.getElementById('mobile-panel-content');
         const addReportBtn = document.getElementById('add-report-btn');
         
+        const incidentContent = UITemplates.incidentDetails(incident);
+        
         if (infoPanelContent) {
-            infoPanelContent.innerHTML = UITemplates.incidentDetails(incident);
+            infoPanelContent.innerHTML = incidentContent;
             
             const closeBtn = document.getElementById('close-details-btn');
             if (closeBtn) {
                 closeBtn.addEventListener('click', UIManager.showWelcomePanel);
+            }
+        }
+        
+        if (mobileContent) {
+            mobileContent.innerHTML = incidentContent;
+            
+            // Show mobile panel automatically on mobile
+            if (window.innerWidth < 1024 && window.MobileManager) {
+                MobileManager.showMobilePanel();
+            }
+            
+            const closeBtnMobile = document.querySelector('#mobile-panel-content #close-details-btn');
+            if (closeBtnMobile) {
+                closeBtnMobile.addEventListener('click', () => {
+                    UIManager.showWelcomePanel();
+                    if (window.MobileManager) {
+                        MobileManager.hideMobilePanel();
+                    }
+                });
             }
         }
         

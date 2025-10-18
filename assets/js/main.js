@@ -1,5 +1,5 @@
 /*
- * HydroFlujo - Main Application
+ * EcoTrack - Main Application
  * Inicialización y coordinación de la aplicación
  */
 
@@ -8,7 +8,7 @@
 // ==========================================================================
 
 document.addEventListener('DOMContentLoaded', async function () {
-    console.log('🌊 HydroFlujo iniciando...');
+    console.log('� EcoTrack iniciando...');
 
     // Hide loading screen after everything is ready
     const loadingScreen = document.getElementById('loading-screen');
@@ -32,6 +32,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Initialize UI (panels, buttons, legend)
     UIManager.initialize();
     console.log('🎨 Interfaz inicializada');
+
+    // Initialize mobile interface
+    MobileManager.init();
+    console.log('📱 Interfaz móvil inicializada');
+
+    // Initialize historical data (after a short delay to ensure other components are ready)
+    setTimeout(() => {
+        HistoricalDataManager.init();
+    }, 1000);
 
     // Load CSV data (await so subsequent steps run after data is loaded)
     await DataManager.loadCSVData();
@@ -67,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Setup intersection observer for animations
     setupAnimationObserver();
 
-    console.log('✅ HydroFlujo listo para usar');
+    console.log('✅ EcoTrack listo para usar');
 });
 
 // ==========================================================================
