@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Detector de Basura IA</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Detector inteligente de contaminación visual usando IA para identificar basura en fotografías y mapear la ubicación automáticamente.">
+    <meta name="keywords" content="Hermosillo, detector basura, IA, inteligencia artificial, contaminación visual, limpieza urbana">
+    <meta name="author" content="EcoTrack Sonora">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="EcoTrack - Detector de Basura IA">
+    <meta property="og:description" content="Detector inteligente de contaminación visual usando IA para identificar basura en fotografías y mapear la ubicación automáticamente.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    
+    <!-- External Styles and Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'display': ['Space Grotesk', 'Inter', 'sans-serif'],
+                        'body': ['Plus Jakarta Sans', 'Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-gentle': 'bounceGentle 2s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'shimmer': 'shimmer 2.5s linear infinite',
+                        'scale-in': 'scaleIn 0.5s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { filter: 'drop-shadow(0 0 5px rgba(34, 197, 94, 0.5))' },
+                            '100%': { filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.8))' }
+                        },
+                        shimmer: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' }
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Leaflet & PDF Libraries -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    
+    <style>
+        .detection-box {
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #166534;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-badge.loading {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .status-badge.info {
+            background: rgba(107, 114, 128, 0.1);
+            color: #374151;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+        
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .upload-zone:hover {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .upload-zone.dragover {
+            border-color: #16a34a;
+            background: rgba(34, 197, 94, 0.1);
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="text-slate-700 antialiased">
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-green-50 to-emerald-50 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="mb-8 animate-pulse">
+                <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-20 w-auto mx-auto mb-4 animate-glow">
+                <div class="font-display font-black text-3xl bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    EcoTrack
+                </div>
+            </div>
+            <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 class="text-xl font-semibold text-slate-800 mb-2">Inicializando Detector IA</h2>
+            <p class="text-slate-600">Cargando modelo de inteligencia artificial...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-effect sticky top-0 z-40 border-b border-white/20">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 font-display">
+                <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-12 w-auto">
+                <span class="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">EcoTrack</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html#mapa-interactivo" class="nav-link text-slate-700 hover:text-cyan-600 font-medium transition-all duration-300 relative">
+                    <i class="fas fa-map-marked-alt mr-2"></i>Mapa Interactivo
+                </a>
+                <a href="index.html#estadisticas" class="nav-link text-slate-700 hover:text-cyan-600 font-medium transition-all duration-300 relative">
+                    <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+                </a>
+                <a href="index.html#historico" class="nav-link text-slate-700 hover:text-cyan-600 font-medium transition-all duration-300 relative">
+                    <i class="fas fa-history mr-2"></i>Histórico
+                </a>
+                <a href="detector.html" class="nav-link text-slate-700 hover:text-green-600 font-medium transition-all duration-300 relative active">
+                    <i class="fas fa-camera mr-2"></i>Detector IA
+                </a>
+                <a href="index.html#acerca-de" class="nav-link text-slate-700 hover:text-cyan-600 font-medium transition-all duration-300 relative">
+                    <i class="fas fa-info-circle mr-2"></i>Acerca de
+                </a>
+                <div class="status-online">
+                    <div class="status-indicator"></div>
+                    <span>IA Activa</span>
+                </div>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-slate-800 focus:outline-none p-2 rounded-lg hover:bg-white/20 transition-colors">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-3 bg-white/90 backdrop-blur-sm border-t border-white/20">
+            <a href="index.html#mapa-interactivo" class="block text-slate-700 hover:text-cyan-600 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-cyan-50">
+                <i class="fas fa-map-marked-alt mr-3"></i>Mapa Interactivo
+            </a>
+            <a href="index.html#estadisticas" class="block text-slate-700 hover:text-cyan-600 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-cyan-50">
+                <i class="fas fa-chart-bar mr-3"></i>Estadísticas
+            </a>
+            <a href="detector.html" class="block text-slate-700 hover:text-green-600 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-green-50 bg-green-50">
+                <i class="fas fa-camera mr-3"></i>Detector IA
+            </a>
+            <a href="index.html#acerca-de" class="block text-slate-700 hover:text-cyan-600 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-cyan-50">
+                <i class="fas fa-info-circle mr-3"></i>Acerca de
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 py-12">
+        <div class="container mx-auto px-6">
+            
+            <!-- Header Section -->
+            <div class="text-center mb-12 animate-fade-in-up">
+                <div class="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100 mb-6">
+                    <i class="fas fa-robot text-2xl text-green-600 animate-glow"></i>
+                    <span class="font-display font-bold text-xl text-gray-800">Detector IA de Contaminación</span>
+                </div>
+                <h1 class="font-display font-black text-4xl md:text-6xl mb-4 leading-tight">
+                    <span class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        Detección Inteligente
+                    </span>
+                    <br>
+                    <span class="text-2xl md:text-4xl bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                        de Contaminación Visual
+                    </span>
+                </h1>
+                <p class="font-body text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    Utiliza <strong class="text-green-600">inteligencia artificial</strong> avanzada para detectar automáticamente 
+                    basura y contaminación en fotografías, y mapeamos su ubicación usando datos EXIF.
+                </p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+                
+                <!-- Left Column: Upload & Controls -->
+                <div class="space-y-6">
+                    
+                    <!-- Upload Zone -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-cloud-upload-alt text-green-600 text-xl"></i>
+                            </div>
+                            Subir Fotografía
+                        </h3>
+                        
+                        <div class="upload-zone" id="uploadZone">
+                            <input type="file" id="imageInput" accept="image/*" class="hidden">
+                            <div class="space-y-4">
+                                <i class="fas fa-camera text-4xl text-gray-400"></i>
+                                <div>
+                                    <p class="text-lg font-medium text-gray-700 mb-2">Arrastra tu imagen aquí</p>
+                                    <p class="text-sm text-gray-500 mb-4">o haz clic para seleccionar</p>
+                                    <button onclick="document.getElementById('imageInput').click()" class="hero-cta-primary">
+                                        <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivo
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-400">Formatos: JPG, PNG, WebP | Máximo: 10MB</p>
+                            </div>
+                        </div>
+                        
+                        <div id="fileInfo" class="mt-4 hidden">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-file-image text-green-600"></i>
+                                    <div>
+                                        <p class="font-medium text-green-800">Archivo seleccionado:</p>
+                                        <p id="currentFileName" class="text-sm text-green-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Control Panel -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.4s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-cogs text-blue-600 text-xl"></i>
+                            </div>
+                            Control de Análisis
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <button id="detectBtn" disabled class="w-full hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-search mr-2"></i>Analizar con IA
+                            </button>
+                            
+                            <div id="statusIndicator" class="status-badge info">
+                                <i class="fas fa-info-circle"></i>
+                                Sistema listo - Selecciona una imagen
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Panel -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.6s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
+                            </div>
+                            Resultados del Análisis
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                                <div class="text-2xl font-bold text-green-600" id="totalObjects">0</div>
+                                <div class="text-sm text-gray-600 font-medium">Objetos Detectados</div>
+                            </div>
+                            <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                                <div class="text-2xl font-bold text-blue-600" id="avgConfidence">0%</div>
+                                <div class="text-sm text-gray-600 font-medium">Confianza Promedio</div>
+                            </div>
+                            <div class="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-100">
+                                <div class="text-2xl font-bold text-red-600" id="contaminationIndex">0%</div>
+                                <div class="text-sm text-gray-600 font-medium">Índice Contaminación</div>
+                            </div>
+                        </div>
+                        
+                        <button id="generatePdfBtn" class="w-full mt-6 hero-cta-secondary">
+                            <i class="fas fa-file-pdf mr-2"></i>Generar Reporte PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Image Display & Map -->
+                <div class="space-y-6">
+                    
+                    <!-- Image Display -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.3s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-orange-100 rounded-lg">
+                                <i class="fas fa-eye text-orange-600 text-xl"></i>
+                            </div>
+                            Imagen con Detecciones
+                        </h3>
+                        
+                        <div class="image-container bg-gray-100 rounded-xl min-h-96 flex items-center justify-center overflow-hidden">
+                            <img id="currentImage" class="max-w-full max-h-96 object-contain rounded-lg shadow-lg hidden">
+                            <div id="imagePlaceholder" class="text-center text-gray-400">
+                                <i class="fas fa-image text-6xl mb-4"></i>
+                                <p class="text-lg">La imagen aparecerá aquí</p>
+                                <p class="text-sm">Las detecciones se mostrarán como cajas de colores</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Display -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.5s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-teal-100 rounded-lg">
+                                <i class="fas fa-map-marker-alt text-teal-600 text-xl"></i>
+                            </div>
+                            Ubicación GPS
+                        </h3>
+                        
+                        <div id="mapContainer" class="h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <div id="mapPlaceholder" class="text-center text-gray-400">
+                                <i class="fas fa-map text-4xl mb-3"></i>
+                                <p class="text-lg">El mapa se mostrará aquí</p>
+                                <p class="text-sm">Ubicación extraída de datos EXIF</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JSON Response -->
+                    <div class="card p-8 animate-fade-in-up" style="animation-delay: 0.7s;">
+                        <h3 class="font-display font-bold text-2xl mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-gray-100 rounded-lg">
+                                <i class="fas fa-code text-gray-600 text-xl"></i>
+                            </div>
+                            Respuesta de la IA
+                        </h3>
+                        
+                        <textarea id="jsonResponse" readonly 
+                                  class="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                                  placeholder="La respuesta JSON de la IA aparecerá aquí..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-16 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 75% 25%, #22c55e 1px, transparent 1px); background-size: 40px 40px;"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-8 w-auto">
+                    <h3 class="text-2xl font-bold font-display bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                        EcoTrack Sonora
+                    </h3>
+                </div>
+                <p class="text-slate-300 mb-6 max-w-2xl mx-auto">
+                    Tecnología de vanguardia para la detección y mapeo de contaminación ambiental 
+                    a través de inteligencia artificial y participación ciudadana.
+                </p>
+                <div class="text-slate-400 text-sm">
+                    <p>&copy; 2025 EcoTrack Sonora. Datos y análisis bajo licencia abierta.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress" class="scroll-progress"></div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- JavaScript Files -->
+    <script src="assets/js/detector.js"></script>
+    <script>
+        // Initialize mobile menu
+        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Hide loading screen
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 300);
+            }
+        }, 1500);
+
+        // Initialize drag and drop
+        const uploadZone = document.getElementById('uploadZone');
+        const imageInput = document.getElementById('imageInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            uploadZone.classList.remove('dragover');
+        }
+
+        uploadZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                imageInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                imageInput.dispatchEvent(event);
+            }
+        }
+
+        uploadZone.addEventListener('click', () => {
+            imageInput.click();
+        });
+    </script>
+</body>
+</html>
