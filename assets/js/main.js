@@ -37,6 +37,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     MobileManager.init();
     console.log('📱 Interfaz móvil inicializada');
 
+    // Initialize enhanced UI interactions
+    initEnhancedUI();
+    console.log('✨ Interacciones mejoradas inicializadas');
+
     // Initialize historical data (after a short delay to ensure other components are ready)
     setTimeout(() => {
         HistoricalDataManager.init();
@@ -299,6 +303,162 @@ function checkBrowserCompatibility() {
 
 // Run compatibility check
 checkBrowserCompatibility();
+
+// ==========================================================================
+// Enhanced UI Interactions
+// ==========================================================================
+
+// Scroll Progress Bar
+function initScrollProgress() {
+    const scrollProgress = document.getElementById('scroll-progress');
+    if (!scrollProgress) return;
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (scrollTop / scrollHeight) * 100;
+        scrollProgress.style.width = scrolled + '%';
+    });
+}
+
+// Smooth scroll for navigation links
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+// Hero CTA Button functionality
+function initHeroCTA() {
+    const heroAddReport = document.getElementById('hero-add-report');
+    if (heroAddReport) {
+        heroAddReport.addEventListener('click', () => {
+            const mapSection = document.getElementById('mapa-interactivo');
+            if (mapSection) {
+                mapSection.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    const addReportBtn = document.getElementById('add-report-btn');
+                    if (addReportBtn) {
+                        addReportBtn.click();
+                    }
+                }, 800);
+            }
+        });
+    }
+}
+
+// Navigation active state management
+function initNavigationStates() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -80% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const sectionId = entry.target.id;
+                
+                // Remove active class from all links
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Add active class to current section link
+                const activeLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+// Enhanced button interactions
+function initButtonEnhancements() {
+    // Add ripple effect to buttons
+    document.querySelectorAll('button, .btn, .hero-cta-primary, .hero-cta-secondary').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+                pointer-events: none;
+                z-index: 1;
+            `;
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        });
+    });
+}
+
+// Intersection observer for animations
+function initScrollAnimations() {
+    const animatedElements = document.querySelectorAll('.animate-fade-in-up, .animate-slide-up, .animate-slide-in-right, .animate-slide-in-left');
+    
+    const animationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-visible');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    animatedElements.forEach(element => {
+        element.classList.add('animate-hidden');
+        animationObserver.observe(element);
+    });
+}
+
+// Initialize all enhanced interactions
+function initEnhancedUI() {
+    initScrollProgress();
+    initSmoothScroll();
+    initHeroCTA();
+    initNavigationStates();
+    initButtonEnhancements();
+    initScrollAnimations();
+}
 
 // ==========================================================================
 // Performance Monitoring
