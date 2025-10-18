@@ -456,6 +456,9 @@ const MapManager = {
               .on('click', () => {
                   UIManager.displayIncidentDetails(incident);
                   AppState.map.setView([incident.lat, incident.lon], 15);
+              })
+              .on('popupopen', function(e) {
+                  MapManager.centerPopup(e.target, e.popup);
               });
 
             // Store marker reference for cleanup
@@ -531,6 +534,9 @@ const MapManager = {
               .on('click', () => {
                   UIManager.displayIncidentDetails(report);
                   AppState.map.setView([report.lat, report.lon], 16);
+              })
+              .on('popupopen', function(e) {
+                  MapManager.centerPopup(e.target, e.popup);
               });
 
         // Store marker reference for cleanup
@@ -603,6 +609,61 @@ const MapManager = {
             console.error('Error loading AGEB layer:', error);
             Utils.showNotification('Error al cargar la capa AGEB Urbanos', 'error');
         }
+    },
+
+    // Center popup in view when opened
+    centerPopup: (marker, popup) => {
+        setTimeout(() => {
+            // Get popup dimensions
+            const popupElement = popup._container;
+            if (!popupElement) return;
+
+            const popupRect = popupElement.getBoundingClientRect();
+            const mapRect = AppState.map.getContainer().getBoundingClientRect();
+            
+            // Calculate if popup is outside viewport
+            const popupBottom = popupRect.bottom;
+            const popupTop = popupRect.top;
+            const popupLeft = popupRect.left;
+            const popupRight = popupRect.right;
+            
+            const mapBottom = mapRect.bottom;
+            const mapTop = mapRect.top;
+            const mapLeft = mapRect.left;
+            const mapRight = mapRect.right;
+            
+            // Calculate adjustments needed
+            let adjustX = 0;
+            let adjustY = 0;
+            
+            // Check if popup extends beyond map boundaries
+            if (popupRight > mapRight) {
+                adjustX = (popupRight - mapRight + 20) / AppState.map.getZoom();
+            }
+            if (popupLeft < mapLeft) {
+                adjustX = (popupLeft - mapLeft - 20) / AppState.map.getZoom();
+            }
+            if (popupBottom > mapBottom) {
+                adjustY = (popupBottom - mapBottom + 20) / AppState.map.getZoom();
+            }
+            if (popupTop < mapTop) {
+                adjustY = (popupTop - mapTop - 20) / AppState.map.getZoom();
+            }
+            
+            // Apply adjustment if needed
+            if (adjustX !== 0 || adjustY !== 0) {
+                const currentCenter = AppState.map.getCenter();
+                const newCenter = [
+                    currentCenter.lat - (adjustY * 0.0001),
+                    currentCenter.lng - (adjustX * 0.0001)
+                ];
+                
+                AppState.map.panTo(newCenter, {
+                    animate: true,
+                    duration: 0.3
+                });
+            }
+        }, 100); // Small delay to ensure popup is rendered
     }
 };
 
