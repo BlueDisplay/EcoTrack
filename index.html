@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#22c55e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>EcoTrack - Monitor Ambiental de Hermosillo</title>
     
     <!-- Meta Tags -->
@@ -95,11 +99,11 @@
         }
     </script>
     
-    <!-- Fonts -->
+    <!-- Optimized Fonts Loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'; this.onload=null;">
 
     <!-- LeafletJS & Chart.js -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -182,7 +186,7 @@
     <div class="mobile-header md:hidden">
         <div class="mobile-header-content">
             <div class="mobile-logo flex items-center gap-2">
-                <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-8 w-auto">
+                <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-8 w-auto" loading="lazy">
                 <span>EcoTrack</span>
             </div>
             <div class="mobile-actions">
@@ -334,6 +338,71 @@
                         </button>
                         <button class="mobile-map-control" id="mobile-location">
                             <i class="fas fa-location-arrow mr-1"></i>Mi Ubicación
+                        </button>
+                        <button class="mobile-map-control" id="mobile-search">
+                            <i class="fas fa-search mr-1"></i>Buscar
+                        </button>
+                    </div>
+                    
+                    <!-- Search and Filter Controls -->
+                    <div class="absolute top-4 left-4 z-50 flex flex-col gap-2">
+                        <!-- Search Bar -->
+                        <div class="card p-3 min-w-80 hidden" id="search-panel">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-search text-cyan-600"></i>
+                                <h4 class="font-semibold text-slate-800">Buscar Eventos</h4>
+                                <button id="close-search" class="ml-auto text-slate-500 hover:text-slate-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                <div>
+                                    <input type="text" id="search-input" placeholder="Buscar por ubicación, tipo de evento..." 
+                                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm">
+                                </div>
+                                
+                                <!-- Quick Filters -->
+                                <div class="flex flex-wrap gap-2">
+                                    <button class="filter-chip active" data-filter="all">
+                                        <i class="fas fa-globe mr-1"></i>Todos
+                                    </button>
+                                    <button class="filter-chip" data-filter="alto">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>Alto Riesgo
+                                    </button>
+                                    <button class="filter-chip" data-filter="medio">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>Medio Riesgo
+                                    </button>
+                                    <button class="filter-chip" data-filter="bajo">
+                                        <i class="fas fa-info-circle mr-1"></i>Bajo Riesgo
+                                    </button>
+                                    <button class="filter-chip" data-filter="ciudadano">
+                                        <i class="fas fa-user mr-1"></i>Reportes
+                                    </button>
+                                </div>
+                                
+                                <!-- Date Range Filter -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Desde</label>
+                                        <input type="date" id="date-from" class="w-full px-2 py-1 border border-slate-300 rounded text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Hasta</label>
+                                        <input type="date" id="date-to" class="w-full px-2 py-1 border border-slate-300 rounded text-xs">
+                                    </div>
+                                </div>
+                                
+                                <!-- Results Counter -->
+                                <div class="text-xs text-slate-600 pt-2 border-t">
+                                    <span id="search-results">Mostrando todos los eventos</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Search Toggle Button -->
+                        <button id="toggle-search" class="card p-3 hover:bg-slate-50 transition-colors">
+                            <i class="fas fa-search text-cyan-600 mr-2"></i>
+                            <span class="font-medium text-slate-700">Buscar y Filtrar</span>
                         </button>
                     </div>
                     
@@ -515,22 +584,36 @@
                             <div class="hero-stat-icon bg-gradient-to-br from-green-500 to-emerald-600">
                                 <i class="fas fa-map-marked-alt"></i>
                             </div>
-                            <div class="text-3xl font-bold text-gray-800 mb-1" id="stats-total-reports">0</div>
-                            <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total de Reportes</div>
+                            <div class="stat-value-enhanced mb-1" id="stats-total-reports" data-count="0">0</div>
+                            <div class="stat-label">Total de Reportes</div>
+                            <div class="stat-change positive mt-2">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="stats-total-change">+0%</span>
+                                <span class="text-xs opacity-75">vs mes anterior</span>
+                            </div>
                         </div>
                         <div class="stat-card-enhanced animate-fade-in-up" style="animation-delay: 0.4s;">
                             <div class="hero-stat-icon bg-gradient-to-br from-orange-500 to-red-500">
                                 <i class="fas fa-calendar-alt"></i>
                             </div>
-                            <div class="text-3xl font-bold text-gray-800 mb-1" id="stats-last-month">0</div>
-                            <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Último Mes</div>
+                            <div class="stat-value-enhanced mb-1" id="stats-last-month" data-count="0">0</div>
+                            <div class="stat-label">Último Mes</div>
+                            <div class="stat-change neutral mt-2">
+                                <i class="fas fa-calendar"></i>
+                                <span id="stats-month-name">Octubre 2025</span>
+                            </div>
                         </div>
                         <div class="stat-card-enhanced animate-fade-in-up" style="animation-delay: 0.6s;">
                             <div class="hero-stat-icon bg-gradient-to-br from-red-500 to-pink-500">
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
-                            <div class="text-3xl font-bold text-gray-800 mb-1" id="stats-high-risk">0</div>
-                            <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Alto Riesgo</div>
+                            <div class="stat-value-enhanced mb-1" id="stats-high-risk" data-count="0">0</div>
+                            <div class="stat-label">Alto Riesgo</div>
+                            <div class="stat-change negative mt-2">
+                                <i class="fas fa-shield-alt"></i>
+                                <span id="stats-risk-percentage">0%</span>
+                                <span class="text-xs opacity-75">del total</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -896,7 +979,7 @@
                 <!-- Brand Section -->
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-4">
-                        <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-10 w-auto">
+                        <img src="Logo/EcoTrack.png" alt="EcoTrack" class="h-10 w-auto" loading="lazy">
                         <h3 class="text-2xl font-bold font-display bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                             EcoTrack Sonora
                         </h3>
@@ -966,9 +1049,6 @@
 
     <!-- Notification Container -->
     <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
-
-    <!-- Chart.js for Historical Data Visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- JavaScript Files -->
     <script src="assets/js/app.js"></script>
