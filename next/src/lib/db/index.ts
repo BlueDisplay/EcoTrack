@@ -5,6 +5,11 @@ import * as schema from './schema';
 // Lazy singleton — avoids crashing at build time when DATABASE_URL is not set
 let _db: NeonHttpDatabase<typeof schema> | null = null;
 
+/** Returns true when a DATABASE_URL is configured */
+export function isDbConfigured(): boolean {
+  return !!process.env.DATABASE_URL;
+}
+
 export function getDb(): NeonHttpDatabase<typeof schema> {
   if (!_db) {
     const url = process.env.DATABASE_URL;

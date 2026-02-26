@@ -1,9 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+import { isDbConfigured } from '@/lib/db';
 import { authConfig } from './auth.config';
 
 export const {
@@ -22,6 +19,14 @@ export const {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        // If no DB is configured, deny all logins
+        if (!isDbConfigured()) return null;
+
+        const { db } = await import('@/lib/db');
+        const { users } = await import('@/lib/db/schema');
+        const { eq } = await import('drizzle-orm');
+        const bcrypt = (await import('bcryptjs')).default;
 
         const email = credentials.email as string;
         const password = credentials.password as string;

@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { isDbConfigured } from '@/lib/db';
 import { reports } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { reportSchema } from '@/lib/schemas/report';
 import { randomUUID } from 'crypto';
 
+function getDatabase() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@/lib/db').db;
+}
+
 // ─── GET /api/reports ───────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
+  if (!isDbConfigured()) {
+    return NextResponse.json([]);
+  }
+
+  const db = getDatabase();
   const { searchParams } = new URL(request.url);
   const rawLimit = Number(searchParams.get('limit') || 500);
   const limit = Math.min(Math.max(rawLimit, 1), 2000);
@@ -32,6 +42,14 @@ export async function GET(request: NextRequest) {
 // ─── POST /api/reports ──────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  if (!isDbConfigured()) {
+    return NextResponse.json(
+      { detail: 'Database not configured' },
+      { status: 503 },
+    );
+  }
+
+  const db = getDatabase();
   let body: unknown;
   try {
     body = await request.json();
@@ -91,6 +109,14 @@ export async function POST(request: NextRequest) {
 // ─── PATCH /api/reports (update status) ─────────────────────────────────────
 
 export async function PATCH(request: NextRequest) {
+  if (!isDbConfigured()) {
+    return NextResponse.json(
+      { detail: 'Database not configured' },
+      { status: 503 },
+    );
+  }
+
+  const db = getDatabase();
   let body: { id: string; status: string };
   try {
     body = await request.json();
