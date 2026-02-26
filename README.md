@@ -1,293 +1,131 @@
-# 🌍 EcoTrack
+# 🌊 EcoTrack — Monitoreo Ambiental Inteligente
 
-**Cartografía Participativa de Riesgos Hidrometeorológicos**
+**Plataforma de monitoreo de inundaciones y contaminación en Hermosillo, Sonora** con detección por IA, mapas interactivos y datos históricos.
 
-EcoTrack es una plataforma web integral que combina monitoreo ambiental, detección de contaminación por IA y análisis de datos históricos para la gestión sostenible de recursos hídricos en Hermosillo, Sonora.
-
-![EcoTrack Logo](Logo/EcoTrack.png)
-
-## 🎯 Descripción
-
-EcoTrack transforma la manera en que monitoreamos y gestionamos los riesgos ambientales urbanos. La plataforma integra:
-
-- **📊 Análisis de Datos Históricos**: Procesamiento de 60+ años de datos meteorológicos de CONAGUA
-- **🗺️ Cartografía Interactiva**: Visualización de eventos hidrometeorológicos y puntos de contaminación  
-- **🤖 Detección IA de Basura**: Sistema automatizado de identificación de contaminación usando visión computacional
-- **👥 Participación Ciudadana**: Reportes georreferenciados de incidencias ambientales
-- **📱 Diseño Responsivo**: Optimizado para dispositivos móviles y desktop
-
-## ✨ Funcionalidades Principales
-
-### 🗺️ **Mapa Interactivo Principal**
-- Visualización de eventos hidrometeorológicos históricos (2025)
-- Reportes ciudadanos con imágenes georreferenciadas
-- Capas opcionales: AGEB urbanas, datos meteorológicos
-- Auto-centrado de popups para mejor experiencia de usuario
-- Navegación intuitiva con controles de zoom y capas
-
-### 🤖 **Detector IA de Contaminación**
-- **API Roboflow**: Modelo entrenado para detección de basura urbana
-- **Extracción EXIF**: Geolocalización automática de imágenes
-- **Bounding Boxes Precisos**: Marcado visual de objetos detectados
-- **Mapeo en Tiempo Real**: Integración automática con el mapa principal
-- **Reportes PDF**: Generación de informes técnicos
-- **Modo Demo**: Fallback para pruebas sin conectividad
-
-### 📊 **Análisis de Datos Históricos**
-- **Datos CONAGUA**: Histórico de precipitaciones 1966-2024
-- **Eventos Catalogados**: 12 eventos hidrometeorológicos documentados
-- **Visualizaciones**: Gráficos interactivos con Chart.js
-- **Estadísticas**: Análisis de tendencias y patrones climáticos
-
-### 📱 **Experiencia Móvil**
-- **Diseño Mobile-First**: Optimizado para dispositivos táctiles
-- **Navegación Inferior**: Acceso rápido en pantallas pequeñas
-- **Gestos Táctiles**: Soporte completo para zoom y panorámica
-- **Carga Rápida**: Optimización de rendimiento para conexiones lentas
-
-## 🛠️ Tecnologías
-
-### Frontend
-- **HTML5** + **CSS3** + **JavaScript ES6+**
-- **Tailwind CSS**: Framework de estilos utilitarios
-- **Leaflet.js 1.9.4**: Biblioteca de mapas interactivos
-- **Chart.js**: Visualizaciones de datos
-- **Font Awesome**: Iconografía
-- **Google Fonts**: Tipografía (Space Grotesk, Plus Jakarta Sans)
-
-### APIs y Servicios
-- **Roboflow API**: Detección de contaminación por IA
-- **OpenStreetMap**: Tiles de mapas base
-- **CONAGUA**: Datos meteorológicos históricos
-- **EXIF.js**: Extracción de metadatos de imágenes
-
-### Datos
-- **CSV**: Eventos hidrometeorológicos
-- **GeoJSON**: Límites urbanos (AGEB)
-- **JSON**: Configuraciones y reportes ciudadanos
-
-## 📁 Estructura del Proyecto
-
-```
-EcoTrack/
-├── 📄 index.html              # Página principal con mapa
-├── 📄 detector.html           # Sistema de detección IA
-├── 📁 assets/
-│   ├── 🎨 css/
-│   │   └── styles.css         # Estilos principales + responsivo
-│   ├── 📊 data/
-│   │   ├── eventos_hidro.csv  # Eventos históricos 2025
-│   │   ├── hermosillo_lluvias_historicas.csv # Datos CONAGUA
-│   │   └── IMG_6701.JPG       # Imagen ejemplo ciudadano
-│   └── 💻 js/
-│       ├── app.js             # Lógica principal del mapa
-│       ├── detector.js        # Sistema de detección IA
-│       ├── historical.js      # Análisis datos históricos
-│       └── main.js            # Coordinador de módulos
-├── 📁 GeoJSON/
-│   └── ageb_hermosillo.geojson # Límites urbanos
-├── 📁 Logo/
-│   └── EcoTrack.png           # Logotipo oficial
-└── 📁 scripts/
-    └── process_conagua_data.py # Procesador datos CONAGUA
-```
-
-## 🚀 Instalación y Uso
-
-### Requisitos Previos
-- **Navegador Web Moderno** (Chrome 90+, Firefox 88+, Safari 14+)
-- **Servidor Web Local** (para desarrollo)
-- **Python 3.8+** (para procesamiento de datos)
-
-### Instalación
-
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/BlueDisplay/EcoTrack.git
-cd EcoTrack
-```
-
-2. **Configurar servidor local**
-```bash
-# Recomendado: levantar el backend (sirve el frontend + API proxy)
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn backend.main:app --reload --port 8000
-```
-
-3. **Acceder a la aplicación**
-```
-http://localhost:8000
-```
-
-### Uso del Sistema
-
-#### 🗺️ **Mapa Principal**
-1. Abrir `http://localhost:8080`
-2. Explorar eventos hidrometeorológicos con los marcadores
-3. Activar/desactivar capas con el control de capas
-4. Hacer click en marcadores para ver detalles e imágenes
-
-#### 🤖 **Detector de Basura**
-1. Navegar a "Detector IA" en el menú
-2. Subir imagen arrastrando o seleccionando archivo
-3. Hacer click en "Detectar Basura"
-4. Revisar resultados y generar reporte PDF
-
-## ⚙️ Configuración
-
-### API de Roboflow
-La detección IA se consume **solo desde el backend** (proxy seguro) para no exponer llaves en el navegador.
-
-- Variables de entorno:
-  - `ROBOFLOW_API_KEY`: requerida para usar IA real
-  - `ROBOFLOW_MODEL`: opcional (default: `visual-pollution-detection-04jk5/3`)
-
-Puedes usar `.env.example` como plantilla para desarrollo local.
-
-Si `ROBOFLOW_API_KEY` no está configurada, el detector entra automáticamente en **modo demo**.
-
-## 🚄 Deploy en Railway
-
-1. Conecta este repo en Railway como nuevo proyecto.
-2. (Opcional pero recomendado) Añade un plugin de **PostgreSQL** en Railway.
-3. Configura Variables (Settings → Variables):
-    - `ROBOFLOW_API_KEY`
-    - `ROBOFLOW_MODEL` (opcional)
-    - `DATABASE_URL` (si usas PostgreSQL en Railway)
-4. Railway usará `railway.json` y arrancará con:
-    - `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-
-Endpoints útiles:
-- `GET /api/health` (verifica configuración)
-- `POST /api/analyze` (recibe `multipart/form-data` con `file`)
-- `GET /api/reports` (lista reportes desde Postgres)
-- `POST /api/reports` (crea reporte en Postgres)
-
-Notas:
-- Si `DATABASE_URL` está configurada, el backend inicializa automáticamente `PostGIS` y crea la tabla `reports` en el arranque.
-
-### Procesamiento de Datos CONAGUA
-Para actualizar datos históricos:
-
-```bash
-python3 scripts/process_conagua_data.py
-```
-
-## 📊 Datos del Sistema
-
-### Eventos Hidrometeorológicos (2025)
-- **12 eventos** catalogados (julio-octubre 2025)
-- **Coordenadas GPS** precisas
-- **Imágenes de referencia** de daños
-- **Clasificación** por tipo de evento
-
-### Datos Históricos CONAGUA
-- **Período**: 1966-2024 (60+ años)
-- **Estación**: 26139 (Hermosillo)
-- **Variables**: Precipitación diaria, temperaturas
-- **Formato**: CSV procesado y limpio
-
-### Reportes Ciudadanos
-- **Geolocalización**: Coordenadas extraídas de EXIF
-- **Imágenes**: Formato JPG con metadatos
-- **Clasificación**: Automática por IA
-- **Integración**: Directa con mapa principal
-
-## 🎨 Diseño y UX
-
-### Paleta de Colores EcoTrack
-- **Verde Primario**: `#22c55e` (sostenibilidad)
-- **Verde Secundario**: `#16a34a` (naturaleza)
-- **Cyan Accent**: `#06b6d4` (agua)
-- **Gradientes**: Efectos glassmorphism
-
-### Principios de Diseño
-- **Mobile-First**: Diseño responsivo desde dispositivos pequeños
-- **Glassmorphism**: Efectos de vidrio esmerilado modernos
-- **Microinteracciones**: Animaciones suaves y feedback visual
-- **Accesibilidad**: Contraste alto y navegación por teclado
-
-## 🔧 Desarrollo
-
-### Agregar Nuevos Eventos
-1. Editar `assets/data/eventos_hidro.csv`
-2. Incluir: fecha, coordenadas, tipo, descripción, imagen
-3. Recargar la aplicación
-
-### Personalizar Detecciones IA
-1. Modificar `CONFIG` en `assets/js/detector.js`
-2. Ajustar umbrales de confianza
-3. Cambiar tipos de objetos detectables
-
-### Estilos Personalizados
-- Editar `assets/css/styles.css`
-- Usar variables CSS para colores consistentes
-- Mantener diseño responsivo
-
-## 📈 Métricas y Analytics
-
-### Estadísticas del Detector
-- **Objetos Detectados**: Conteo total por sesión
-- **Confianza Promedio**: Precisión del modelo IA
-- **Índice de Contaminación**: Métrica calculada automáticamente
-
-### Datos Históricos
-- **Tendencias Climáticas**: Análisis de 60 años
-- **Eventos Extremos**: Identificación de patrones
-- **Correlaciones**: Lluvia vs. eventos hidrometeorológicos
-
-## 🤝 Contribuir
-
-### Reportar Issues
-1. Usar GitHub Issues
-2. Incluir detalles del navegador
-3. Proporcionar pasos para reproducir
-
-### Enviar Pull Requests
-1. Fork del repositorio
-2. Crear rama feature: `git checkout -b feature/nueva-funcionalidad`
-3. Commit cambios: `git commit -am 'Agregar nueva funcionalidad'`
-4. Push a la rama: `git push origin feature/nueva-funcionalidad`
-5. Crear Pull Request
-
-## 📝 Changelog
-
-### v2.0.0 (Octubre 2025)
-- 🎯 **Rebrand completo**: HydroFlujo → EcoTrack
-- 🤖 **Detector IA**: Sistema completo de detección de basura
-- 📱 **Diseño responsivo**: Optimización móvil completa
-- 📊 **Datos históricos**: Integración CONAGUA 1966-2024
-- 🗺️ **Auto-centrado**: Mejora UX en popups del mapa
-
-### v1.0.0 (Julio 2025)
-- 🗺️ **Mapa inicial**: Visualización eventos hidrometeorológicos
-- 📄 **CSV Integration**: Carga de datos estructurados
-- 🎨 **UI Base**: Diseño inicial con Tailwind CSS
-
-## 🔗 Enlaces
-
-- **Demo Live**: [Próximamente]
-- **Documentación API**: [Roboflow Visual Pollution Detection](https://roboflow.com/)
-- **Datos CONAGUA**: [Servicio Meteorológico Nacional](https://smn.conagua.gob.mx/)
-
-## 📧 Contacto
-
-**Equipo EcoTrack**
-- Email: [pendiente]
-- GitHub: [@BlueDisplay](https://github.com/BlueDisplay)
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)
+![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
 
 ---
 
-<div align="center">
+## Funcionalidades
 
-**🌍 EcoTrack - Tecnología para un Futuro Sostenible 🌱**
+| Módulo | Descripción |
+|--------|-------------|
+| **Mapa Interactivo** | Leaflet con reportes ciudadanos, capas AGEB y marcadores por gravedad |
+| **EcoScan IA** | Detección automática de contaminación visual usando Roboflow |
+| **Historial Meteorológico** | Gráficas de precipitación anual/mensual con datos de CONAGUA |
+| **Panel Admin** | Gestión de reportes con filtros por estado y acciones rápidas |
+| **Reportes Ciudadanos** | Formulario para crear reportes con ubicación GPS desde el mapa |
+| **Generación PDF** | Exportar detecciones de IA como reportes PDF descargables |
 
-*Construyendo ciudades más inteligentes, un dato a la vez*
+## Stack Tecnológico
 
-</div>
+- **Framework:** Next.js 15 (App Router) + React 19
+- **Lenguaje:** TypeScript 5.7
+- **Estilos:** Tailwind CSS v4 + glassmorphism
+- **Mapas:** react-leaflet 5 + Leaflet
+- **Gráficas:** Recharts
+- **IA:** Roboflow API (proxy server-side)
+- **Base de Datos:** Drizzle ORM + Neon PostgreSQL (opcional)
+- **Auth:** NextAuth v5 (JWT + Credentials)
+- **Deploy:** Vercel
+
+## Estructura del Proyecto
+
+```
+├── src/
+│   ├── app/                    # App Router pages & API routes
+│   │   ├── page.tsx            # Mapa principal
+│   │   ├── detector/           # EcoScan IA
+│   │   ├── historico/          # Historial meteorológico
+│   │   ├── admin/              # Panel de administración
+│   │   ├── login/              # Autenticación
+│   │   └── api/
+│   │       ├── analyze/        # Proxy a Roboflow
+│   │       ├── reports/        # CRUD reportes
+│   │       ├── health/         # Health check
+│   │       └── auth/           # NextAuth endpoints
+│   ├── components/             # Componentes React
+│   │   ├── map/                # Mapa Leaflet + AGEB layer
+│   │   ├── charts/             # Gráficas Recharts
+│   │   ├── detector/           # Canvas, upload, resultados
+│   │   ├── sidebar/            # Panel lateral
+│   │   ├── forms/              # Formulario de reportes
+│   │   ├── layout/             # Navbar, footer, mobile nav
+│   │   └── ui/                 # Spinner, animated counter
+│   └── lib/                    # Utilidades y lógica
+│       ├── db/                 # Drizzle schema + conexión Neon
+│       ├── api/                # Funciones cliente para API
+│       ├── schemas/            # Validación Zod
+│       ├── data/               # Carga CSV + estadísticas
+│       ├── map/                # Iconos Leaflet
+│       ├── exif/               # Extracción GPS de imágenes
+│       ├── pdf/                # Generación de reportes PDF
+│       └── storage/            # Upload de imágenes
+├── public/
+│   ├── data/                   # CSVs históricos + incidents.json
+│   ├── geojson/                # Capas AGEB (Municipio, Urbanas, Rurales)
+│   └── logo/                   # EcoTrack.png
+├── drizzle/                    # Migraciones SQL (PostGIS)
+├── legacy/                     # Versión anterior (FastAPI + HTML/JS)
+├── vercel.json                 # Config de deploy
+├── package.json
+└── tsconfig.json
+```
+
+## Desarrollo Local
+
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+La app arranca en `http://localhost:3000`. No necesitas configurar ninguna variable de entorno — Roboflow ya está configurado y la base de datos es opcional.
+
+## Deploy en Vercel
+
+### Opción 1: Desde CLI
+
+```bash
+npx vercel         # Preview
+npx vercel --prod  # Producción
+```
+
+### Opción 2: Desde GitHub
+
+1. Importa el repo en [vercel.com/new](https://vercel.com/new)
+2. Framework: **Next.js** (se detecta automáticamente)
+3. Root directory: `.` (raíz)
+4. Agrega la variable de entorno:
+
+| Variable | Valor |
+|----------|-------|
+| `AUTH_SECRET` | resultado de `openssl rand -base64 32` |
+
+5. Deploy 🚀
+
+### Variable de entorno opcional
+
+| Variable | Uso |
+|----------|-----|
+| `DATABASE_URL` | Conectar Neon PostgreSQL para persistencia de reportes |
+
+## API Endpoints
+
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/api/health` | GET | Estado del servicio |
+| `/api/reports` | GET | Listar reportes (query: `?limit=500`) |
+| `/api/reports` | POST | Crear reporte (JSON body) |
+| `/api/reports` | PATCH | Actualizar estado (`{id, status}`) |
+| `/api/analyze` | POST | Detectar contaminación (multipart/form-data con `file`) |
+
+## Licencia
+
+[MIT](LICENSE)
