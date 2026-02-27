@@ -42,6 +42,11 @@ export async function analyzeImage(file: File): Promise<AnalysisResult> {
   }
 
   if (!res.ok) {
+    if (res.status === 413) {
+      throw new Error(
+        'Imagen demasiado grande para analizar. Usa una menor a 4 MB o deja que se optimice.',
+      );
+    }
     const msg =
       (body?.detail as string) ||
       (body?.message as string) ||

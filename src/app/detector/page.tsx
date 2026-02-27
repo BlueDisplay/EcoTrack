@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { ImageUpload } from '@/components/detector/image-upload';
 import { DetectionCanvas } from '@/components/detector/detection-canvas';
@@ -10,6 +10,7 @@ import { createReport } from '@/lib/api/reports';
 import { extractExifData, type ExifLocation } from '@/lib/exif/extract';
 import { generateDetectionPDF } from '@/lib/pdf/generate';
 import { uploadReportImage } from '@/lib/storage/upload';
+import { optimizeImageForApi } from '@/lib/images/optimize';
 import { StockIcon } from '@/components/ui/stock-icon';
 import { toast } from 'sonner';
 
@@ -22,21 +23,33 @@ const DetectionMap = dynamic(
   },
 );
 
+const MAX_API_IMAGE_BYTES = 3_500_000;
+
+function formatMb(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export default function DetectorPage() {
   const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [apiReadyFile, setApiReadyFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [imageSize, setImageSize] = useState({ width: 640, height: 480 });
   const [location, setLocation] = useState<ExifLocation | null>(null);
+  const [isPreparingFile, setIsPreparingFile] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSavingReport, setIsSavingReport] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const selectionRef = useRef(0);
 
   // Handle file selection
   const handleFileSelect = useCallback(async (file: File) => {
+    const selectionId = ++selectionRef.current;
     setCurrentFile(file);
+    setApiReadyFile(file);
     setDetections([]);
     setAnalysisError(null);
+    setIsPreparingFile(true);
 
     // Create preview
     const url = URL.createObjectURL(file);
@@ -52,18 +65,46 @@ export default function DetectorPage() {
     } catch {
       setLocation(null);
     }
+
+    try {
+      const optimized = await optimizeImageForApi(file, {
+        maxBytes: MAX_API_IMAGE_BYTES,
+        maxEdge: 2048,
+      });
+
+      if (selectionId !== selectionRef.current) return;
+      setApiReadyFile(optimized);
+
+      if (optimized.size < file.size) {
+        toast.info(
+          `Imagen optimizada: ${formatMb(file.size)} -> ${formatMb(optimized.size)}`,
+        );
+      }
+    } catch {
+      if (selectionId !== selectionRef.current) return;
+      setApiReadyFile(file);
+    } finally {
+      if (selectionId === selectionRef.current) {
+        setIsPreparingFile(false);
+      }
+    }
   }, []);
 
   // Run detection
   const handleDetect = useCallback(async () => {
-    if (!currentFile) return;
+    const fileForAnalysis = apiReadyFile ?? currentFile;
+    if (!fileForAnalysis) return;
+    if (isPreparingFile) {
+      toast.info('Preparando imagen, intenta de nuevo en un momento');
+      return;
+    }
 
     setIsAnalyzing(true);
     setAnalysisError(null);
     setDetections([]);
 
     try {
-      const result: AnalysisResult = await analyzeImage(currentFile);
+      const result: AnalysisResult = await analyzeImage(fileForAnalysis);
 
       setDetections(result.predictions);
       setImageSize(result.image);
@@ -80,7 +121,7 @@ export default function DetectorPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [currentFile]);
+  }, [apiReadyFile, currentFile, isPreparingFile]);
 
   // Generate PDF
   const handleGeneratePDF = useCallback(() => {
@@ -98,11 +139,12 @@ export default function DetectorPage() {
   }, [preview, detections, location, currentFile]);
 
   const handleSaveReport = useCallback(async () => {
-    if (!currentFile || detections.length === 0) return;
+    const fileForUpload = apiReadyFile ?? currentFile;
+    if (!fileForUpload || detections.length === 0) return;
 
     setIsSavingReport(true);
     try {
-      const uploaded = await uploadReportImage(currentFile);
+      const uploaded = await uploadReportImage(fileForUpload);
       const topDetection = detections.reduce(
         (best, curr) => (curr.confidence > best.confidence ? curr : best),
         detections[0],
@@ -136,7 +178,7 @@ export default function DetectorPage() {
     } finally {
       setIsSavingReport(false);
     }
-  }, [currentFile, detections, location]);
+  }, [apiReadyFile, currentFile, detections, location]);
 
   // Computed stats
   const totalObjects = detections.length;
@@ -213,7 +255,14 @@ export default function DetectorPage() {
                     <StockIcon name="document" className="w-5 h-5" />
                     <div>
                       <p className="font-medium text-green-800">Archivo seleccionado:</p>
-                      <p className="text-sm text-green-600">{currentFile.name}</p>
+                      <p className="text-sm text-green-600">
+                        {currentFile.name} ({formatMb(currentFile.size)})
+                      </p>
+                      {apiReadyFile && apiReadyFile.size < currentFile.size && (
+                        <p className="text-xs text-emerald-700 mt-1">
+                          Archivo optimizado para API: {formatMb(apiReadyFile.size)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -232,15 +281,17 @@ export default function DetectorPage() {
               <div className="space-y-4">
                 <button
                   onClick={handleDetect}
-                  disabled={!currentFile || isAnalyzing}
+                  disabled={!currentFile || isAnalyzing || isPreparingFile}
                   className="w-full hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
+                  {isPreparingFile ? 'Preparando imagen...' : isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
 
                 {/* Status Badge */}
                 <div className={`status-badge ${isAnalyzing ? 'loading' : analysisError ? 'error' : detections.length > 0 ? 'success' : 'info'}`}>
-                  {isAnalyzing
+                  {isPreparingFile
+                    ? 'Optimizando imagen para evitar errores de tamaño...'
+                    : isAnalyzing
                     ? 'Analizando imagen...'
                     : analysisError
                       ? `Error: ${analysisError}`
@@ -287,7 +338,7 @@ export default function DetectorPage() {
               {detections.length > 0 && (
                 <button
                   onClick={handleSaveReport}
-                  disabled={isSavingReport || isAnalyzing}
+                  disabled={isSavingReport || isAnalyzing || isPreparingFile}
                   className="w-full mt-3 hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSavingReport ? 'Guardando...' : 'Guardar Reporte Ciudadano'}

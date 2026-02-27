@@ -20,7 +20,16 @@ export async function uploadReportImage(file: File): Promise<UploadedReportImage
   });
 
   if (!res.ok) {
-    throw new Error('Failed to upload image');
+    let detail = `Error del servidor (${res.status})`;
+    try {
+      const body = (await res.json()) as { detail?: string; message?: string };
+      detail = body.detail || body.message || detail;
+    } catch {
+      if (res.status === 413) {
+        detail = 'Imagen demasiado grande para subir. Usa una menor a 4 MB.';
+      }
+    }
+    throw new Error(detail);
   }
 
   const data = await res.json();

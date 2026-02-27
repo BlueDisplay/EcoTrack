@@ -85,7 +85,7 @@ export function ImageUpload({ onFileSelect, preview }: ImageUploadProps) {
               </button>
             </p>
             <p className="text-gray-300 text-xs mt-2">
-              JPG, PNG o WebP — máximo 10 MB
+              JPG, PNG o WebP — optimización automática para análisis IA
             </p>
           </div>
         </div>
