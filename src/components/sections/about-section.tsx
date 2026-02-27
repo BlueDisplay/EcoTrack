@@ -1,4 +1,9 @@
-export function AboutSection() {
+interface AboutSectionProps {
+  totalReports: number;
+  coloniaCount: number;
+}
+
+export function AboutSection({ totalReports, coloniaCount }: AboutSectionProps) {
   return (
     <section id="acerca-de" className="py-24 bg-white relative overflow-hidden">
       {/* Background Pattern */}
@@ -85,7 +90,7 @@ export function AboutSection() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="text-center card p-6 hover:scale-105 transition-transform">
-            <div className="text-3xl font-bold text-emerald-600 mb-2">12+</div>
+            <div className="text-3xl font-bold text-emerald-600 mb-2">{totalReports}</div>
             <div className="text-sm text-slate-600">Reportes Registrados</div>
           </div>
           <div className="text-center card p-6 hover:scale-105 transition-transform">
@@ -93,7 +98,7 @@ export function AboutSection() {
             <div className="text-sm text-slate-600">Monitoreo Continuo</div>
           </div>
           <div className="text-center card p-6 hover:scale-105 transition-transform">
-            <div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
+            <div className="text-3xl font-bold text-blue-600 mb-2">{coloniaCount}</div>
             <div className="text-sm text-slate-600">Colonias Cubiertas</div>
           </div>
           <div className="text-center card p-6 hover:scale-105 transition-transform">

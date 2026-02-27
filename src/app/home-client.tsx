@@ -53,6 +53,11 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
 
   const allReports = [...csvAsReports, ...reports];
 
+  // Compute unique colonia count
+  const coloniaCount = new Set(
+    allReports.map((r) => r.colonia).filter(Boolean),
+  ).size;
+
   // Load DB reports
   const loadReports = useCallback(async () => {
     try {
@@ -120,6 +125,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
       {/* Hero Section */}
       <HeroSection
         totalReports={allReports.length}
+        coloniaCount={coloniaCount}
         onExploreMap={scrollToMap}
         onAddReport={handleAddReport}
       />
@@ -142,7 +148,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
       <StatsSection reports={reports} csvEvents={csvEvents} />
 
       {/* About Section */}
-      <AboutSection />
+      <AboutSection totalReports={allReports.length} coloniaCount={coloniaCount} />
 
       {/* Section Divider */}
       <div className="section-divider container mx-auto px-6" />

@@ -30,7 +30,7 @@ function WelcomePanel({ totalReports }: { totalReports: number }) {
         </div>
         <div className="bg-emerald-50 rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-emerald-600">IA</p>
-          <p className="text-xs text-emerald-500">Detección Activa</p>
+          <p className="text-xs text-emerald-500">Detección</p>
         </div>
       </div>
 

@@ -6,6 +6,10 @@ const API_BASE = '';
 
 export async function fetchReports(limit = 500): Promise<Report[]> {
   const res = await fetch(`${API_BASE}/api/reports?limit=${limit}`);
+  if (res.status === 503) {
+    // DB not configured — return empty gracefully
+    return [];
+  }
   if (!res.ok) {
     throw new Error(`Failed to fetch reports: ${res.status}`);
   }

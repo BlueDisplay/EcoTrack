@@ -14,41 +14,48 @@ import {
 } from 'recharts';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
 
-// Fallback data when no CSV is loaded
-const FALLBACK_MONTHLY = [
-  { month: 'Ene', average: 15 }, { month: 'Feb', average: 8 }, { month: 'Mar', average: 5 },
-  { month: 'Abr', average: 3 }, { month: 'May', average: 2 }, { month: 'Jun', average: 12 },
-  { month: 'Jul', average: 85 }, { month: 'Ago', average: 78 }, { month: 'Sep', average: 42 },
-  { month: 'Oct', average: 18 }, { month: 'Nov', average: 12 }, { month: 'Dic', average: 20 },
-];
-
-const FALLBACK_YEARLY = [
-  { year: 2015, total: 350 }, { year: 2016, total: 290 }, { year: 2017, total: 320 },
-  { year: 2018, total: 270 }, { year: 2019, total: 340 }, { year: 2020, total: 380 },
-  { year: 2021, total: 295 }, { year: 2022, total: 260 }, { year: 2023, total: 420 },
-  { year: 2024, total: 310 },
-];
-
-const EXTREME_EVENTS = [
-  { date: 'Sep 2023', title: 'Tormenta Tropical Hilary', description: 'Precipitación acumulada de 120mm en 24 horas, múltiples inundaciones urbanas.', severity: 'alto' },
-  { date: 'Jul 2022', title: 'Lluvia Severa Julio', description: 'Evento de lluvia intensa con 85mm registrados, anegaciones en zona centro.', severity: 'alto' },
-  { date: 'Ago 2021', title: 'Monzón Intenso', description: 'Período de lluvias superiores al promedio durante agosto, con 95mm acumulados.', severity: 'medio' },
-  { date: 'Sep 2020', title: 'Evento Extremo Septiembre', description: 'Precipitación récord de 78mm en 6 horas, desbordamiento de cauces.', severity: 'alto' },
-];
-
 interface HistoricalSectionProps {
   stats: HistoricalStats | null;
 }
 
 export function HistoricalSection({ stats }: HistoricalSectionProps) {
-  // Use real data when available, fallback otherwise
-  const annualData = stats?.yearlyTotals?.slice(-15) ?? FALLBACK_YEARLY;
-  const monthlyData = stats?.monthlyAverages ?? FALLBACK_MONTHLY;
-  const totalYears = stats?.totalYears ?? 63;
-  const totalPrecip = stats ? Math.round(stats.yearlyTotals.reduce((s, y) => s + y.total, 0)) : 21708;
-  const avgAnnual = stats?.averageAnnualRainfall ?? 300;
-  // Count rainy-day years as proxy (total records with rain > 0)
-  const rainDays = stats ? stats.yearlyTotals.length * 28 : 1756; // rough estimate
+  if (!stats) {
+    return (
+      <section id="historico" className="py-24 bg-gradient-to-br from-green-50 via-white to-emerald-50">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="section-title">Histórico de Lluvias</h2>
+          <p className="text-slate-500 mt-4">Datos históricos no disponibles. Verifique que los archivos CSV estén cargados.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const annualData = stats.yearlyTotals.slice(-15);
+  const monthlyData = stats.monthlyAverages;
+  const totalYears = stats.totalYears;
+  const totalPrecip = Math.round(stats.yearlyTotals.reduce((s, y) => s + y.total, 0));
+  const avgAnnual = stats.averageAnnualRainfall;
+
+  // Compute actual rain days from yearly data (estimate: avg ~28 rain days/yr for Hermosillo)
+  const rainDays = stats.totalYears > 0
+    ? Math.round(stats.yearlyTotals.reduce((s, y) => s + Math.min(365, Math.round(y.total / avgAnnual * 28)), 0))
+    : 0;
+
+  // Derive extreme events from actual data: years with highest precipitation
+  const extremeEvents = [...stats.yearlyTotals]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 4)
+    .map((y) => ({
+      date: `${y.year}`,
+      title: `Año con alta precipitación (${Math.round(y.total)} mm)`,
+      description: `Precipitación anual de ${Math.round(y.total)} mm, ${Math.round((y.total / avgAnnual - 1) * 100)}% por encima del promedio histórico.`,
+      severity: y.total > avgAnnual * 1.3 ? 'alto' as const : 'medio' as const,
+    }));
+
+  // Get last update date from newest year in data
+  const lastYear = stats.yearlyTotals.length > 0 ? stats.yearlyTotals[stats.yearlyTotals.length - 1].year : new Date().getFullYear();
+  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const lastUpdate = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
   // Short month name helper
   const shortMonth = (m: string) => m.substring(0, 3);
@@ -156,14 +163,14 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
           </div>
 
           <div className="space-y-4">
-            {EXTREME_EVENTS.map((event, i) => (
+            {extremeEvents.map((event, i) => (
               <div
                 key={i}
                 className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-slate-50 to-white border border-slate-100 hover:border-slate-200 transition-colors"
               >
                 <div className="flex flex-col items-center shrink-0">
                   <div className={`w-3 h-3 rounded-full ${event.severity === 'alto' ? 'bg-red-500' : 'bg-orange-400'}`} />
-                  {i < EXTREME_EVENTS.length - 1 && <div className="w-0.5 h-12 bg-slate-200 mt-1" />}
+                  {i < extremeEvents.length - 1 && <div className="w-0.5 h-12 bg-slate-200 mt-1" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
@@ -194,7 +201,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
               <strong>Coordenadas:</strong> 29.099°N, -110.954°W | <strong>Altitud:</strong> 221 msnm
             </p>
             <p className="text-xs text-slate-500">
-              Datos proporcionados por el Servicio Meteorológico Nacional (CONAGUA) | Última actualización: Octubre 2025
+              Datos proporcionados por el Servicio Meteorológico Nacional (CONAGUA) | Última actualización: {lastUpdate}
             </p>
           </div>
         </div>

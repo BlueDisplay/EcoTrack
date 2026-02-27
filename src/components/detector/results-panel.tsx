@@ -6,7 +6,6 @@ interface ResultsPanelProps {
   detections: Detection[];
   isLoading: boolean;
   error: string | null;
-  demoMode: boolean;
 }
 
 const CLASS_LABELS: Record<string, string> = {
@@ -20,7 +19,6 @@ export function ResultsPanel({
   detections,
   isLoading,
   error,
-  demoMode,
 }: ResultsPanelProps) {
   if (isLoading) {
     return (
@@ -50,11 +48,6 @@ export function ResultsPanel({
         <h3 className="text-sm font-semibold text-gray-700">
           Resultados de Detección
         </h3>
-        {demoMode && (
-          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-            Modo Demo
-          </span>
-        )}
       </div>
 
       <div className="space-y-2">

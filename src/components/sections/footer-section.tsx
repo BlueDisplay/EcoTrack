@@ -30,14 +30,18 @@ export function FooterSection() {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://github.com/badouintec/EcoTracker"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Twitter"
               >
                 𝕏
               </a>
               <a
-                href="#"
+                href="https://github.com/badouintec/EcoTracker"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Facebook"
               >
@@ -53,7 +57,9 @@ export function FooterSection() {
                 ⌨
               </a>
               <a
-                href="#"
+                href="https://github.com/badouintec/EcoTracker"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Telegram"
               >
@@ -67,22 +73,22 @@ export function FooterSection() {
             <h4 className="font-bold text-lg mb-4 text-white">Recursos</h4>
             <ul className="space-y-2 text-slate-300">
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="/api/reports" className="hover:text-emerald-400 transition-colors">
                   API de Datos
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="https://github.com/badouintec/EcoTracker#readme" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Documentación
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="#estadisticas" className="hover:text-emerald-400 transition-colors">
                   Exportar Datos
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="#historico" className="hover:text-emerald-400 transition-colors">
                   Metodología
                 </Link>
               </li>
@@ -94,22 +100,22 @@ export function FooterSection() {
             <h4 className="font-bold text-lg mb-4 text-white">Comunidad</h4>
             <ul className="space-y-2 text-slate-300">
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="https://github.com/badouintec/EcoTracker/graphs/contributors" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Colaboradores
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="https://github.com/badouintec/EcoTracker/issues/new?labels=bug" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Reportar Error
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="https://github.com/badouintec/EcoTracker/issues/new?labels=enhancement" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Sugerir Mejora
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-emerald-400 transition-colors">
+                <Link href="https://github.com/badouintec/EcoTracker/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Términos de Uso
                 </Link>
               </li>

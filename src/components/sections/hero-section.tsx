@@ -2,11 +2,12 @@
 
 interface HeroSectionProps {
   totalReports: number;
+  coloniaCount: number;
   onExploreMap: () => void;
   onAddReport: () => void;
 }
 
-export function HeroSection({ totalReports, onExploreMap, onAddReport }: HeroSectionProps) {
+export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddReport }: HeroSectionProps) {
   return (
     <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
       {/* Animated Background Elements */}
@@ -59,9 +60,9 @@ export function HeroSection({ totalReports, onExploreMap, onAddReport }: HeroSec
               <div className="hero-stat-label">Reportes</div>
             </div>
             <div className="hero-stat-card group">
-              <div className="hero-stat-icon"><span>👥</span></div>
-              <div className="hero-stat-number">850+</div>
-              <div className="hero-stat-label">Ciudadanos</div>
+              <div className="hero-stat-icon"><span>🏠</span></div>
+              <div className="hero-stat-number">{coloniaCount}</div>
+              <div className="hero-stat-label">Colonias</div>
             </div>
             <div className="hero-stat-card group">
               <div className="hero-stat-icon"><span>⏱️</span></div>
@@ -70,8 +71,8 @@ export function HeroSection({ totalReports, onExploreMap, onAddReport }: HeroSec
             </div>
             <div className="hero-stat-card group">
               <div className="hero-stat-icon"><span>🛡️</span></div>
-              <div className="hero-stat-number">98%</div>
-              <div className="hero-stat-label">Confiabilidad</div>
+              <div className="hero-stat-number">100%</div>
+              <div className="hero-stat-label">Datos Abiertos</div>
             </div>
           </div>
 

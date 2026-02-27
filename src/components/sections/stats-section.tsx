@@ -48,9 +48,34 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
   // Merge CSV events with DB reports for richer data
   const allEvents = [...csvEvents.map(csvToReport), ...reports];
 
+  // Filter events based on timePeriod for temporal chart
+  const now = new Date();
+  const daysBack = parseInt(timePeriod, 10);
+  const cutoff = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
+  const filteredEvents = allEvents.filter((r) => {
+    const dateStr = r.fechaEvento || (r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : null);
+    if (!dateStr) return false;
+    return new Date(dateStr) >= cutoff;
+  });
+
   const totalReports = allEvents.length;
   const highRisk = allEvents.filter((r) => r.gravedad === 'alto' || r.gravedad === 'critico').length;
   const riskPercentage = totalReports > 0 ? Math.round((highRisk / totalReports) * 100) : 0;
+
+  // Compute month-over-month change for the reports card
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const thisMonthCount = allEvents.filter((r) => {
+    const d = r.fechaEvento ? new Date(r.fechaEvento) : r.createdAt ? new Date(r.createdAt) : null;
+    return d && d >= thisMonth;
+  }).length;
+  const lastMonthCount = allEvents.filter((r) => {
+    const d = r.fechaEvento ? new Date(r.fechaEvento) : r.createdAt ? new Date(r.createdAt) : null;
+    return d && d >= lastMonth && d < thisMonth;
+  }).length;
+  const growthPct = lastMonthCount > 0 ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100) : 0;
+  const growthSign = growthPct >= 0 ? '+' : '';
+  const growthClass = growthPct > 0 ? 'positive' : growthPct < 0 ? 'negative' : 'neutral';
 
   // Severity data
   const severityData = Object.entries(
@@ -73,8 +98,8 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 
-  // Temporal data (by month)
-  const temporalData = getTemporalData(allEvents);
+  // Temporal data (by month) — uses filtered events based on time period
+  const temporalData = getTemporalData(filteredEvents);
 
   // Insights
   const mostAffectedColonia = coloniaData[0]?.name || '--';
@@ -82,6 +107,21 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
   // Current month name
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const currentMonth = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
+
+  // Download chart data as CSV
+  const downloadCSV = (data: Record<string, unknown>[], filename: string) => {
+    if (data.length === 0) return;
+    const headers = Object.keys(data[0]);
+    const rows = data.map((row) => headers.map((h) => row[h] ?? '').join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <section id="estadisticas" className="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
@@ -102,9 +142,9 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
               </div>
               <div className="stat-value-enhanced mb-1">{totalReports}</div>
               <div className="text-sm text-slate-600">Total de Reportes</div>
-              <div className="stat-change positive mt-2">
-                <span>↑</span>
-                <span>+{Math.round(totalReports * 0.12)}%</span>
+              <div className={`stat-change ${growthClass} mt-2`}>
+                <span>{growthPct >= 0 ? '↑' : '↓'}</span>
+                <span>{growthSign}{growthPct}%</span>
                 <span className="text-xs opacity-75">vs mes anterior</span>
               </div>
             </div>
@@ -112,8 +152,8 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
               <div className="hero-stat-icon bg-gradient-to-br from-orange-500 to-red-500">
                 📅
               </div>
-              <div className="stat-value-enhanced mb-1">{csvEvents.length}</div>
-              <div className="text-sm text-slate-600">Último Mes</div>
+              <div className="stat-value-enhanced mb-1">{filteredEvents.length}</div>
+              <div className="text-sm text-slate-600">Periodo Seleccionado</div>
               <div className="stat-change neutral mt-2">
                 <span>📅</span>
                 <span>{currentMonth}</span>
@@ -144,10 +184,10 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
                 Nivel de Gravedad
               </h3>
               <div className="flex items-center gap-2">
-                <button className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Actualizar datos">
                   🔄
                 </button>
-                <button className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <button onClick={() => downloadCSV(severityData as Record<string, unknown>[], 'gravedad')} className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Descargar CSV">
                   ⬇️
                 </button>
               </div>
@@ -189,10 +229,10 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
                 Distribución por Colonia
               </h3>
               <div className="flex items-center gap-2">
-                <button className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Actualizar datos">
                   🔄
                 </button>
-                <button className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <button onClick={() => downloadCSV(coloniaData as Record<string, unknown>[], 'colonias')} className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Descargar CSV">
                   ⬇️
                 </button>
               </div>
@@ -233,7 +273,7 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
                   <option value="90">Últimos 3 meses</option>
                   <option value="365">Último año</option>
                 </select>
-                <button className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Actualizar datos">
                   🔄
                 </button>
               </div>

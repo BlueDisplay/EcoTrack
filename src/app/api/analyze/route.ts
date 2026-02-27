@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ROBOFLOW_API_KEY = '5DhCtO8u8D7lzplKgnkA';
-const ROBOFLOW_MODEL = 'visual-pollution-detection-04jk5/3';
+const ROBOFLOW_API_KEY = process.env.ROBOFLOW_API_KEY ?? '';
+const ROBOFLOW_MODEL = process.env.ROBOFLOW_MODEL ?? 'visual-pollution-detection-04jk5/3';
 
 // Extend timeout for Roboflow (Vercel Pro only — Hobby caps at 10s)
 export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
+  if (!ROBOFLOW_API_KEY) {
+    return NextResponse.json(
+      { detail: 'ROBOFLOW_API_KEY no configurada en el servidor' },
+      { status: 503 },
+    );
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();

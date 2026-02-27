@@ -14,7 +14,10 @@ function getDatabase() {
 
 export async function GET(request: NextRequest) {
   if (!isDbConfigured()) {
-    return NextResponse.json([]);
+    return NextResponse.json(
+      { detail: 'Database not configured' },
+      { status: 503 },
+    );
   }
 
   const db = getDatabase();

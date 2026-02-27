@@ -27,14 +27,12 @@ export default function DetectorPage() {
   const [location, setLocation] = useState<ExifLocation | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [demoMode, setDemoMode] = useState(false);
 
   // Handle file selection
   const handleFileSelect = useCallback(async (file: File) => {
     setCurrentFile(file);
     setDetections([]);
     setAnalysisError(null);
-    setDemoMode(false);
 
     // Create preview
     const url = URL.createObjectURL(file);
@@ -61,7 +59,7 @@ export default function DetectorPage() {
     setDetections([]);
 
     try {
-      const result: AnalysisResult = await analyzeImage(currentFile, { demoMode });
+      const result: AnalysisResult = await analyzeImage(currentFile);
 
       setDetections(result.predictions);
       setImageSize(result.image);
@@ -78,7 +76,7 @@ export default function DetectorPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [currentFile, demoMode]);
+  }, [currentFile]);
 
   // Generate PDF
   const handleGeneratePDF = useCallback(() => {
@@ -100,7 +98,9 @@ export default function DetectorPage() {
   const avgConfidence = totalObjects > 0
     ? Math.round(detections.reduce((s, d) => s + d.confidence, 0) / totalObjects * 100)
     : 0;
-  const contaminationIndex = Math.min(100, totalObjects * 15);
+  const contaminationIndex = totalObjects > 0
+    ? Math.min(100, Math.round(avgConfidence * (Math.log2(totalObjects + 1) / Math.log2(10)) * 100))
+    : 0;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 py-12">
@@ -126,18 +126,18 @@ export default function DetectorPage() {
             basura y contaminación en fotografías, y mapeamos su ubicación usando datos EXIF.
           </p>
 
-          {/* Demo Notice */}
+          {/* AI Detection Info */}
           <div className="max-w-2xl mx-auto">
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+            <div className="bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-lg">
               <div className="flex items-center">
-                <span className="text-blue-400 mr-3">ℹ️</span>
+                <span className="text-emerald-400 mr-3">🤖</span>
                 <div className="text-left">
-                  <p className="text-sm font-medium text-blue-800">
-                    <strong>Modo Demostración Activo</strong>
+                  <p className="text-sm font-medium text-emerald-800">
+                    <strong>Detección con IA Activa</strong>
                   </p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    El detector está funcionando con IA simulada para fines de demostración.
-                    Las detecciones son generadas algorítmicamente para mostrar el funcionamiento del sistema.
+                  <p className="text-sm text-emerald-700 mt-1">
+                    El detector utiliza el modelo de Roboflow para identificar contaminación visual
+                    en fotografías. Sube una imagen para analizarla.
                   </p>
                 </div>
               </div>
@@ -204,17 +204,6 @@ export default function DetectorPage() {
                         ? `${detections.length} objetos detectados`
                         : 'Sistema listo — Selecciona una imagen'}
                 </div>
-
-                {/* Demo mode toggle */}
-                <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={demoMode}
-                    onChange={(e) => setDemoMode(e.target.checked)}
-                    className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
-                  />
-                  Modo Demo (detecciones simuladas)
-                </label>
               </div>
             </div>
 
@@ -311,7 +300,6 @@ export default function DetectorPage() {
                 detections={detections}
                 isLoading={isAnalyzing}
                 error={analysisError}
-                demoMode={demoMode}
               />
             </div>
           </div>

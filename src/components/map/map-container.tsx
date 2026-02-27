@@ -24,6 +24,7 @@ interface EcoTrackMapProps {
   onMapClick?: (lat: number, lng: number) => void;
   onMarkerClick?: (report: Report) => void;
   selectedId?: string | null;
+  onMapReady?: (map: L.Map) => void;
 }
 
 // ─── Map Click Handler ──────────────────────────────────────────────────────
@@ -48,6 +49,16 @@ function AutoPan({ lat, lon }: { lat: number; lon: number }) {
   useEffect(() => {
     map.setView([lat, lon], map.getZoom(), { animate: true });
   }, [lat, lon, map]);
+  return null;
+}
+
+// ─── Map Ready Handler ──────────────────────────────────────────────────────
+
+function MapReadyHandler({ onReady }: { onReady: (map: L.Map) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    onReady(map);
+  }, [map, onReady]);
   return null;
 }
 
@@ -108,6 +119,7 @@ export function EcoTrackMap({
   onMapClick,
   onMarkerClick,
   selectedId,
+  onMapReady,
 }: EcoTrackMapProps) {
   const mapRef = useRef<L.Map | null>(null);
 
@@ -141,6 +153,8 @@ export function EcoTrackMap({
       ))}
 
       {onMapClick && <MapClickHandler onClick={onMapClick} />}
+
+      {onMapReady && <MapReadyHandler onReady={onMapReady} />}
 
       {selectedIncident && (
         <AutoPan lat={selectedIncident.lat} lon={selectedIncident.lon} />

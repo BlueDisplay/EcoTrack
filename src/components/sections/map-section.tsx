@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/sidebar/sidebar';
 import { ReportForm } from '@/components/forms/report-form';
@@ -46,10 +46,79 @@ export function MapSection({
   onAddReport,
 }: MapSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapInstanceRef = useRef<any>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchText, setSearchText] = useState('');
+  const [isSatellite, setIsSatellite] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleMapReady = useCallback((map: any) => {
+    mapInstanceRef.current = map;
+  }, []);
+
+  const handleCenterMap = useCallback(() => {
+    mapInstanceRef.current?.setView([29.072967, -110.955919], 13, { animate: true });
+  }, []);
+
+  const handleToggleSatellite = useCallback(async () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const L = (await import('leaflet')).default;
+    setIsSatellite((prev) => {
+      const next = !prev;
+      // Remove existing tile layers
+      map.eachLayer((layer: unknown) => {
+        if (layer instanceof L.TileLayer) map.removeLayer(layer);
+      });
+      if (next) {
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri',
+        }).addTo(map);
+      } else {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleFullscreen = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  }, []);
+
+  const handleExportCSV = useCallback(() => {
+    const headers = ['id', 'titulo', 'colonia', 'gravedad', 'lat', 'lon', 'fecha'];
+    const rows = filteredReports.map((r) => [
+      r.id, r.titulo, r.colonia || '', r.gravedad, r.lat, r.lon, r.fechaEvento || '',
+    ]);
+    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ecotrack-reportes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      await navigator.share({ title: 'EcoTrack Hermosillo', text: 'Mapa de reportes hidrometeorológicos', url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Enlace copiado al portapapeles');
+    }
+  }, []);
   const selectedIncident = selectedId
     ? reports.find((r) => r.id === selectedId) || null
     : null;
@@ -91,6 +160,7 @@ export function MapSection({
             onMapClick={onMapClick}
             onMarkerClick={onMarkerClick}
             selectedId={selectedId}
+            onMapReady={handleMapReady}
           />
 
           {/* Search and Filter Controls */}
@@ -164,9 +234,9 @@ export function MapSection({
 
           {/* Map Controls Overlay */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 z-[400]">
-            <button className="btn-map-control" title="Centrar mapa en Hermosillo">🎯</button>
-            <button className="btn-map-control" title="Alternar vista satelital">🛰️</button>
-            <button className="btn-map-control" title="Pantalla completa">⛶</button>
+            <button onClick={handleCenterMap} className="btn-map-control" title="Centrar mapa en Hermosillo">🎯</button>
+            <button onClick={handleToggleSatellite} className="btn-map-control" title="Alternar vista satelital">{isSatellite ? '🗺️' : '🛰️'}</button>
+            <button onClick={handleFullscreen} className="btn-map-control" title="Pantalla completa">⛶</button>
           </div>
 
           {/* Weather Info */}
@@ -176,15 +246,15 @@ export function MapSection({
               <span className="font-medium">Hermosillo, Son.</span>
             </div>
             <div className="text-xs text-slate-600 mt-1">
-              Última actualización: Ahora
+              Última actualización: {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
 
           {/* Mobile Map Controls */}
           <div className="absolute top-4 left-4 right-4 z-[500] flex gap-2 md:hidden">
-            <button className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🎯 Centro</button>
-            <button className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">📁 Capas</button>
-            <button className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">📍 Ubicación</button>
+            <button onClick={handleCenterMap} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🎯 Centro</button>
+            <button onClick={handleToggleSatellite} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🛰️ Capas</button>
+            <button onClick={handleFullscreen} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">📍 Completa</button>
             <button onClick={() => setSearchOpen(!searchOpen)} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🔍 Buscar</button>
           </div>
         </div>
@@ -215,10 +285,10 @@ export function MapSection({
                 ➕ Añadir Nuevo Reporte
               </button>
               <div className="flex gap-2">
-                <button className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
+                <button onClick={handleExportCSV} className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
                   📥 Exportar
                 </button>
-                <button className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
+                <button onClick={handleShare} className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
                   🔗 Compartir
                 </button>
               </div>
