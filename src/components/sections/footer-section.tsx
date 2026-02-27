@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { StockIcon } from '@/components/ui/stock-icon';
 
 export function FooterSection() {
   const currentYear = new Date().getFullYear();
@@ -40,40 +39,26 @@ export function FooterSection() {
             </p>
             <div className="flex gap-3">
               <a
-                href="https://github.com/badouintec/EcoTracker"
+                href="https://instagram.com/ecotrack_hmo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-300"
-                aria-label="Twitter"
+                aria-label="Instagram EcoTrack HMO"
               >
-                <StockIcon name="document" className="w-4.5 h-4.5" />
-              </a>
-              <a
-                href="https://github.com/badouintec/EcoTracker"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-300"
-                aria-label="Facebook"
-              >
-                <StockIcon name="users" className="w-4.5 h-4.5" />
-              </a>
-              <a
-                href="https://github.com/badouintec/EcoTracker"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-300"
-                aria-label="GitHub"
-              >
-                <StockIcon name="lab" className="w-4.5 h-4.5" />
-              </a>
-              <a
-                href="https://github.com/badouintec/EcoTracker"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-300"
-                aria-label="Telegram"
-              >
-                <StockIcon name="camera" className="w-4.5 h-4.5" />
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-4.5 h-4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                  <circle cx="12" cy="12" r="4.2" />
+                  <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
+                </svg>
               </a>
             </div>
           </div>

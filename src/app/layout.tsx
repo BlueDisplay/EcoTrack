@@ -12,7 +12,7 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://eco-tracker-seven.vercel.app'),
+  metadataBase: new URL('https://eco-tracker-olive.vercel.app'),
   title: {
     default: 'EcoTrack — Cartografia Participativa de Riesgos',
     template: '%s | EcoTrack',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     title: 'EcoTrack — Cartografia Participativa de Riesgos',
     description:
       'Plataforma de ciencia ciudadana para monitoreo colaborativo de riesgos hidrometeorologicos en Hermosillo, Sonora.',
-    url: 'https://eco-tracker-seven.vercel.app',
+    url: 'https://eco-tracker-olive.vercel.app',
     siteName: 'EcoTrack Sonora',
     images: [{ url: '/icon-512.png', width: 512, height: 512, alt: 'EcoTrack logo' }],
     locale: 'es_MX',
