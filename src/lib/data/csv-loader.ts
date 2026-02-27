@@ -4,7 +4,7 @@
 import Papa from 'papaparse';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { asc, eq } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 import { db, isDbConfigured } from '@/lib/db';
 import { rainfallConagua } from '@/lib/db/schema';
 
@@ -36,6 +36,10 @@ const HERMOSILLO_COORDS = {
 };
 
 const HERMOSILLO_CONAGUA_STATION_ID = '26139';
+const HERMOSILLO_STATION_NAME = 'HERMOSILLO II (DGE)';
+const CONAGUA_FUENTE_URL = 'https://www.gob.mx/conagua';
+const OPEN_METEO_FUENTE_URL = 'https://archive-api.open-meteo.com/v1/archive';
+const RAINFALL_UPSERT_BATCH_SIZE = 250;
 
 export interface HistoricalRainRecord {
   año: number;
@@ -74,7 +78,14 @@ type RawHistoricalRainRecord = Record<string, unknown> & {
   mes?: number | string;
   precipitacion?: number | string;
   precipitacion_mm?: number | string;
+  evaporacion_mm?: number | string;
+  temp_max_c?: number | string;
+  temp_min_c?: number | string;
   fecha?: string;
+  estacion?: string;
+  estacion_id?: number | string;
+  latitud?: number | string;
+  longitud?: number | string;
 };
 
 interface OpenMeteoArchiveResponse {
@@ -82,6 +93,19 @@ interface OpenMeteoArchiveResponse {
     time?: string[];
     precipitation_sum?: Array<number | null>;
   };
+}
+
+interface RainfallDbRow {
+  conaguaStationId: string;
+  fechaEvento: string;
+  estacionNombre: string;
+  precipitacionMm: number;
+  evaporacionMm: number | null;
+  tempMaxC: number | null;
+  tempMinC: number | null;
+  lat: number | null;
+  lon: number | null;
+  fuenteUrl: string;
 }
 
 function toNumber(value: unknown): number | null {
@@ -157,7 +181,7 @@ function normalizeHistoricalRow(raw: RawHistoricalRainRecord): HistoricalRainRec
  * Load and parse the historical rainfall CSV from CONAGUA.
  * Runs server-side only.
  */
-export function loadHistoricalRainData(): HistoricalRainRecord[] {
+function loadHistoricalRainCsvRows(): RawHistoricalRainRecord[] {
   const csvPath = path.join(
     process.cwd(),
     'public',
@@ -171,7 +195,11 @@ export function loadHistoricalRainData(): HistoricalRainRecord[] {
     skipEmptyLines: true,
   });
 
-  return data
+  return data;
+}
+
+export function loadHistoricalRainData(): HistoricalRainRecord[] {
+  return loadHistoricalRainCsvRows()
     .map((row) => normalizeHistoricalRow(row))
     .filter((row): row is HistoricalRainRecord => row !== null);
 }
@@ -253,6 +281,129 @@ export async function loadOpenMeteoRainData(options: {
 }
 
 /**
+ * Convert the local CONAGUA CSV into rows that match the Neon rainfall table.
+ */
+function loadHistoricalRainSeedRows(): RainfallDbRow[] {
+  return loadHistoricalRainCsvRows()
+    .map((row) => {
+      const fechaEvento = typeof row.fecha === 'string' ? row.fecha.trim() : '';
+      const conaguaStationId = row.estacion_id != null
+        ? String(row.estacion_id).trim()
+        : HERMOSILLO_CONAGUA_STATION_ID;
+      const estacionNombre = typeof row.estacion === 'string' && row.estacion.trim()
+        ? row.estacion.trim()
+        : HERMOSILLO_STATION_NAME;
+      const precipitacionMm = toNumber(row.precipitacion_mm ?? row.precipitacion);
+
+      if (!fechaEvento || !conaguaStationId || !estacionNombre || precipitacionMm == null || precipitacionMm < 0) {
+        return null;
+      }
+
+      return {
+        conaguaStationId,
+        fechaEvento,
+        estacionNombre,
+        precipitacionMm: Math.round(precipitacionMm * 10) / 10,
+        evaporacionMm: toNumber(row.evaporacion_mm),
+        tempMaxC: toNumber(row.temp_max_c),
+        tempMinC: toNumber(row.temp_min_c),
+        lat: toNumber(row.latitud),
+        lon: toNumber(row.longitud),
+        fuenteUrl: CONAGUA_FUENTE_URL,
+      };
+    })
+    .filter((row): row is RainfallDbRow => row !== null);
+}
+
+function mapOpenMeteoRowsToDbRows(rows: HistoricalRainRecord[]): RainfallDbRow[] {
+  return rows
+    .map((row): RainfallDbRow | null => {
+      const fechaEvento = typeof row.fecha === 'string' ? row.fecha.trim() : '';
+      const precipitacionMm = toNumber(row.precipitacion);
+
+      if (!fechaEvento || precipitacionMm == null || precipitacionMm < 0) {
+        return null;
+      }
+
+      return {
+        conaguaStationId: HERMOSILLO_CONAGUA_STATION_ID,
+        fechaEvento,
+        estacionNombre: HERMOSILLO_STATION_NAME,
+        precipitacionMm: Math.round(precipitacionMm * 10) / 10,
+        evaporacionMm: null,
+        tempMaxC: null,
+        tempMinC: null,
+        lat: HERMOSILLO_COORDS.latitude,
+        lon: HERMOSILLO_COORDS.longitude,
+        fuenteUrl: OPEN_METEO_FUENTE_URL,
+      };
+    })
+    .filter((row): row is RainfallDbRow => row !== null);
+}
+
+function chunkRows(rows: RainfallDbRow[], size: number): RainfallDbRow[][] {
+  const chunks: RainfallDbRow[][] = [];
+  for (let i = 0; i < rows.length; i += size) {
+    chunks.push(rows.slice(i, i + size));
+  }
+  return chunks;
+}
+
+function addDays(date: string, days: number): string {
+  const base = new Date(`${date}T12:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function getYesterdayIsoDate(): string {
+  const today = new Date();
+  today.setUTCDate(today.getUTCDate() - 1);
+  return today.toISOString().slice(0, 10);
+}
+
+async function upsertRainfallRows(rows: RainfallDbRow[]): Promise<void> {
+  if (rows.length === 0) return;
+
+  const batches = chunkRows(rows, RAINFALL_UPSERT_BATCH_SIZE);
+
+  for (const batch of batches) {
+    await db
+      .insert(rainfallConagua)
+      .values(
+        batch.map((row) => ({
+          conaguaStationId: row.conaguaStationId,
+          fechaEvento: row.fechaEvento,
+          estacionNombre: row.estacionNombre,
+          precipitacionMm: row.precipitacionMm,
+          evaporacionMm: row.evaporacionMm,
+          tempMaxC: row.tempMaxC,
+          tempMinC: row.tempMinC,
+          lat: row.lat,
+          lon: row.lon,
+          fuenteUrl: row.fuenteUrl,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [
+          rainfallConagua.conaguaStationId,
+          rainfallConagua.fechaEvento,
+        ],
+        set: {
+          estacionNombre: sql`excluded.estacion_nombre`,
+          precipitacionMm: sql`excluded.precipitacion_mm`,
+          evaporacionMm: sql`excluded.evaporacion_mm`,
+          tempMaxC: sql`excluded.temp_max_c`,
+          tempMinC: sql`excluded.temp_min_c`,
+          lat: sql`excluded.lat`,
+          lon: sql`excluded.lon`,
+          fuenteUrl: sql`excluded.fuente_url`,
+          ingestedAt: new Date(),
+        },
+      });
+  }
+}
+
+/**
  * Load historical rainfall data from the application's primary Neon table.
  * When DATABASE_URL is configured, this becomes the source of truth.
  */
@@ -280,6 +431,81 @@ async function loadDatabaseRainData(): Promise<HistoricalRainRecord[]> {
     .filter((row): row is HistoricalRainRecord => row !== null);
 }
 
+async function getLatestDatabaseRainDate(): Promise<string | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const [latestRow] = await db
+    .select({
+      fecha: rainfallConagua.fechaEvento,
+    })
+    .from(rainfallConagua)
+    .where(eq(rainfallConagua.conaguaStationId, HERMOSILLO_CONAGUA_STATION_ID))
+    .orderBy(desc(rainfallConagua.fechaEvento))
+    .limit(1);
+
+  return latestRow?.fecha ?? null;
+}
+
+/**
+ * Smart sync strategy:
+ * 1) Seed the DB from the canonical CONAGUA CSV if the table is empty
+ * 2) Extend beyond the CSV with Open-Meteo up to yesterday
+ * 3) If CSV is unavailable, Open-Meteo can populate the whole history as fallback
+ */
+async function syncRainfallDatabase(): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  let latestDate = await getLatestDatabaseRainDate();
+
+  if (!latestDate) {
+    try {
+      const seedRows = loadHistoricalRainSeedRows();
+      await upsertRainfallRows(seedRows);
+      latestDate = await getLatestDatabaseRainDate();
+    } catch {
+      // fallback handled below
+    }
+  }
+
+  const endDate = getYesterdayIsoDate();
+
+  if (!latestDate) {
+    try {
+      const openMeteoRows = await loadOpenMeteoRainData({
+        startDate: '1961-01-01',
+        endDate,
+      });
+      await upsertRainfallRows(mapOpenMeteoRowsToDbRows(openMeteoRows));
+      return;
+    } catch {
+      return;
+    }
+  }
+
+  if (latestDate >= endDate) {
+    return;
+  }
+
+  try {
+    const startDate = addDays(latestDate, 1);
+    if (startDate > endDate) {
+      return;
+    }
+
+    const openMeteoRows = await loadOpenMeteoRainData({
+      startDate,
+      endDate,
+    });
+    await upsertRainfallRows(mapOpenMeteoRowsToDbRows(openMeteoRows));
+  } catch {
+    // If refresh fails, keep existing DB data and continue.
+  }
+}
+
 /**
  * Priority:
  * 1) In auto mode, if DATABASE_URL is configured, Neon DB is the primary source
@@ -301,10 +527,19 @@ export async function loadBestAvailableRainData(): Promise<{
 
   if (forceDatabase || (!forceOpenMeteo && !forceConagua && isDbConfigured())) {
     try {
+      await syncRainfallDatabase();
       const dbRecords = await loadDatabaseRainData();
-      return { records: dbRecords, source: 'neon_db' };
+      if (dbRecords.length > 0) {
+        return { records: dbRecords, source: 'neon_db' };
+      }
+
+      if (forceDatabase) {
+        return { records: [], source: 'neon_db' };
+      }
     } catch {
-      return { records: [], source: 'neon_db' };
+      if (forceDatabase) {
+        return { records: [], source: 'neon_db' };
+      }
     }
   }
 

@@ -82,7 +82,7 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
           <h2 className="section-title">Histórico de Lluvias</h2>
           <p className="section-subtitle">
             {activeSource === 'neon_db'
-              ? 'Datos históricos de precipitación leídos directamente desde la tabla `rainfall_conagua` en Neon.'
+              ? 'Datos históricos de precipitación leídos desde `rainfall_conagua` en Neon, con base histórica de CONAGUA y complemento reciente de Open-Meteo cuando faltan fechas nuevas.'
               : activeSource === 'conagua_csv'
               ? 'Datos históricos de precipitación en Hermosillo desde 1961, basados en registros oficiales de CONAGUA (Estación 26139 - Hermosillo II).'
               : 'Datos históricos de precipitación en Hermosillo desde 1961, obtenidos de Open-Meteo Archive API para la zona urbana de Hermosillo.'}
@@ -223,7 +223,7 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
                   <strong>Estación filtrada:</strong> 26139 - HERMOSILLO II (DGE)
                 </p>
                 <p className="text-sm text-slate-600 mb-2">
-                  <strong>Notas:</strong> La gráfica refleja exactamente los registros disponibles en la base de datos para esa estación.
+                  <strong>Notas:</strong> La tabla se siembra con CONAGUA y se completa con Open-Meteo solo para fechas posteriores no cubiertas por el CSV.
                 </p>
               </>
             ) : activeSource === 'conagua_csv' ? (

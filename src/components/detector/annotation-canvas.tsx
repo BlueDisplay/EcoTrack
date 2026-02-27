@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import type { Detection } from '@/lib/api/analyze';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -8,6 +8,14 @@ import type { Detection } from '@/lib/api/analyze';
 export interface ManualAnnotation extends Detection {
   /** Marks this detection as manually drawn by the user */
   _manual: true;
+}
+
+/** Methods exposed to the parent via ref */
+export interface AnnotationCanvasHandle {
+  /** Returns a data-URL (PNG) of the canvas with the image + all drawn detections/annotations */
+  toAnnotatedDataURL: () => string | null;
+  /** Returns a Blob (PNG) of the annotated canvas — useful for uploading */
+  toAnnotatedBlob: () => Promise<Blob | null>;
 }
 
 interface DrawingBox {
@@ -49,21 +57,41 @@ const CLASS_COLORS: Record<string, string> = {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function AnnotationCanvas({
-  imageSrc,
-  aiDetections,
-  manualAnnotations,
-  imageSize,
-  drawMode,
-  onBoxDrawn,
-  onRemoveAnnotation,
-}: AnnotationCanvasProps) {
+export const AnnotationCanvas = forwardRef<AnnotationCanvasHandle, AnnotationCanvasProps>(
+  function AnnotationCanvas(
+    {
+      imageSrc,
+      aiDetections,
+      manualAnnotations,
+      imageSize,
+      drawMode,
+      onBoxDrawn,
+      onRemoveAnnotation,
+    },
+    ref,
+  ) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [drawing, setDrawing] = useState<DrawingBox | null>(null);
   const [hoveredManual, setHoveredManual] = useState<number | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [canvasDims, setCanvasDims] = useState({ width: 640, height: 480 });
+
+  // Expose annotated image export methods to parent
+  useImperativeHandle(ref, () => ({
+    toAnnotatedDataURL() {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      return canvas.toDataURL('image/png');
+    },
+    async toAnnotatedBlob() {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      return new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png');
+      });
+    },
+  }));
 
   const allDetections: (Detection & { _isManual?: boolean; _manualIdx?: number })[] = [
     ...aiDetections.map((d) => ({ ...d, _isManual: false as const })),
@@ -375,4 +403,5 @@ export function AnnotationCanvas({
       )}
     </div>
   );
-}
+  },
+);

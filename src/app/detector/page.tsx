@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ImageUpload } from '@/components/detector/image-upload';
-import { AnnotationCanvas, type ManualAnnotation } from '@/components/detector/annotation-canvas';
+import { AnnotationCanvas, type ManualAnnotation, type AnnotationCanvasHandle } from '@/components/detector/annotation-canvas';
 import { ResultsPanel } from '@/components/detector/results-panel';
 import { LabelPicker } from '@/components/detector/label-picker';
 import { analyzeImage, type Detection, type AnalysisResult } from '@/lib/api/analyze';
@@ -45,6 +45,7 @@ export default function DetectorPage() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const selectionRef = useRef(0);
+  const canvasRef = useRef<AnnotationCanvasHandle>(null);
 
   // Manual annotation mode
   const [drawMode, setDrawMode] = useState(false);
@@ -198,12 +199,15 @@ export default function DetectorPage() {
     toast.info('Anotación eliminada');
   }, []);
 
-  // Generate PDF (includes both AI + manual)
+  // Generate PDF (includes both AI + manual — uses annotated canvas image)
   const handleGeneratePDF = useCallback(() => {
     if (!preview || allDetections.length === 0) return;
 
+    // Grab the canvas with all detections/annotations drawn
+    const annotatedSrc = canvasRef.current?.toAnnotatedDataURL() ?? preview;
+
     generateDetectionPDF({
-      imageSrc: preview,
+      imageSrc: annotatedSrc,
       detections: allDetections,
       location: location ? { lat: location.lat, lon: location.lon } : null,
       dateTime: location?.dateTime,
@@ -213,18 +217,28 @@ export default function DetectorPage() {
     toast.success('Reporte PDF generado');
   }, [preview, allDetections, location, currentFile]);
 
-  // Save report (AI + manual combined)
+  // Save report (AI + manual combined — uploads annotated image with bounding boxes)
   const handleSaveReport = useCallback(async () => {
-    const fileForUpload = apiReadyFile ?? currentFile;
-    if (!fileForUpload || allDetections.length === 0) return;
-    if (fileForUpload.size > MAX_API_IMAGE_BYTES) {
-      toast.error(`La imagen sigue muy pesada (${formatMb(fileForUpload.size)}).`);
-      return;
-    }
+    if (!currentFile || allDetections.length === 0) return;
 
     setIsSavingReport(true);
     try {
-      const uploaded = await uploadReportImage(fileForUpload);
+      // 1. Try to get the annotated canvas image (with bounding boxes drawn on it)
+      let fileForUpload: File | Blob | null = null;
+      const annotatedBlob = await canvasRef.current?.toAnnotatedBlob();
+      if (annotatedBlob) {
+        fileForUpload = new File(
+          [annotatedBlob],
+          currentFile.name.replace(/\.\w+$/, '-annotated.png'),
+          { type: 'image/png' },
+        );
+      }
+      // Fallback to original image if canvas export fails
+      if (!fileForUpload) {
+        fileForUpload = apiReadyFile ?? currentFile;
+      }
+
+      const uploaded = await uploadReportImage(fileForUpload as File);
       const topDetection = allDetections.reduce(
         (best, curr) => (curr.confidence > best.confidence ? curr : best),
         allDetections[0],
@@ -622,6 +636,7 @@ export default function DetectorPage() {
               <div className="bg-gray-100 rounded-xl min-h-96 flex items-center justify-center overflow-hidden relative">
                 {preview ? (
                   <AnnotationCanvas
+                    ref={canvasRef}
                     imageSrc={preview}
                     aiDetections={aiDetections}
                     manualAnnotations={manualAnnotations}

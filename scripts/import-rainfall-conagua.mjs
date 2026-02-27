@@ -6,8 +6,15 @@ import { neon } from '@neondatabase/serverless';
 const ROOT_DIR = process.cwd();
 const ENV_FILES = ['.env.local', '.env'];
 const CSV_PATH = path.join(ROOT_DIR, 'public', 'data', 'hermosillo_lluvias_historicas.csv');
-const SOURCE_LABEL = 'csv_conagua';
+const CONAGUA_SOURCE_URL = 'https://www.gob.mx/conagua';
+const OPEN_METEO_SOURCE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const BATCH_SIZE = 200;
+const HERMOSILLO_STATION_ID = '26139';
+const HERMOSILLO_STATION_NAME = 'HERMOSILLO II (DGE)';
+const HERMOSILLO_COORDS = {
+  latitude: 29.072967,
+  longitude: -110.955919,
+};
 
 function loadEnvFiles() {
   for (const fileName of ENV_FILES) {
@@ -56,6 +63,18 @@ function chunk(items, size) {
   return chunks;
 }
 
+function addDays(date, days) {
+  const base = new Date(`${date}T12:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function getYesterdayIsoDate() {
+  const today = new Date();
+  today.setUTCDate(today.getUTCDate() - 1);
+  return today.toISOString().slice(0, 10);
+}
+
 function normalizeRows(rows) {
   return rows
     .map((row) => {
@@ -78,9 +97,102 @@ function normalizeRows(rows) {
         tempMinC: toNullableNumber(row.temp_min_c),
         lat: toNullableNumber(row.latitud),
         lon: toNullableNumber(row.longitud),
+        fuenteUrl: CONAGUA_SOURCE_URL,
       };
     })
     .filter((row) => row !== null);
+}
+
+async function fetchOpenMeteoRows(startDate, endDate) {
+  if (startDate > endDate) return [];
+
+  const url = new URL(OPEN_METEO_SOURCE_URL);
+  url.searchParams.set('latitude', String(HERMOSILLO_COORDS.latitude));
+  url.searchParams.set('longitude', String(HERMOSILLO_COORDS.longitude));
+  url.searchParams.set('start_date', startDate);
+  url.searchParams.set('end_date', endDate);
+  url.searchParams.set('daily', 'precipitation_sum');
+  url.searchParams.set('timezone', 'America/Hermosillo');
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Open-Meteo respondió ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const dates = payload?.daily?.time ?? [];
+  const mmSeries = payload?.daily?.precipitation_sum ?? [];
+
+  if (!Array.isArray(dates) || !Array.isArray(mmSeries) || dates.length !== mmSeries.length) {
+    return [];
+  }
+
+  return dates
+    .map((fechaEvento, index) => {
+      const precipitacionMm = toNullableNumber(mmSeries[index]);
+      if (typeof fechaEvento !== 'string' || !fechaEvento || precipitacionMm == null || precipitacionMm < 0) {
+        return null;
+      }
+
+      return {
+        conaguaStationId: HERMOSILLO_STATION_ID,
+        fechaEvento,
+        estacionNombre: HERMOSILLO_STATION_NAME,
+        precipitacionMm,
+        evaporacionMm: null,
+        tempMaxC: null,
+        tempMinC: null,
+        lat: HERMOSILLO_COORDS.latitude,
+        lon: HERMOSILLO_COORDS.longitude,
+        fuenteUrl: OPEN_METEO_SOURCE_URL,
+      };
+    })
+    .filter((row) => row !== null);
+}
+
+async function upsertRows(sql, rows) {
+  const batches = chunk(rows, BATCH_SIZE);
+
+  for (const batch of batches) {
+    await sql.transaction(
+      batch.map((row) => sql`
+        INSERT INTO rainfall_conagua (
+          conagua_station_id,
+          fecha_evento,
+          estacion_nombre,
+          precipitacion_mm,
+          evaporacion_mm,
+          temp_max_c,
+          temp_min_c,
+          lat,
+          lon,
+          fuente_url
+        ) VALUES (
+          ${row.conaguaStationId},
+          ${row.fechaEvento},
+          ${row.estacionNombre},
+          ${row.precipitacionMm},
+          ${row.evaporacionMm},
+          ${row.tempMaxC},
+          ${row.tempMinC},
+          ${row.lat},
+          ${row.lon},
+          ${row.fuenteUrl}
+        )
+        ON CONFLICT (conagua_station_id, fecha_evento)
+        DO UPDATE SET
+          estacion_nombre = EXCLUDED.estacion_nombre,
+          precipitacion_mm = EXCLUDED.precipitacion_mm,
+          evaporacion_mm = EXCLUDED.evaporacion_mm,
+          temp_max_c = EXCLUDED.temp_max_c,
+          temp_min_c = EXCLUDED.temp_min_c,
+          lat = EXCLUDED.lat,
+          lon = EXCLUDED.lon,
+          fuente_url = EXCLUDED.fuente_url,
+          ingested_at = NOW()
+      `),
+    );
+  }
 }
 
 async function main() {
@@ -112,57 +224,31 @@ async function main() {
   }
 
   const sql = neon(databaseUrl);
-  const batches = chunk(rows, BATCH_SIZE);
 
   const beforeCountResult = await sql('SELECT COUNT(*)::int AS count FROM rainfall_conagua');
   const beforeCount = beforeCountResult[0]?.count ?? 0;
+  await upsertRows(sql, rows);
 
-  for (const batch of batches) {
-    await sql.transaction(
-      batch.map((row) => sql`
-        INSERT INTO rainfall_conagua (
-          conagua_station_id,
-          fecha_evento,
-          estacion_nombre,
-          precipitacion_mm,
-          evaporacion_mm,
-          temp_max_c,
-          temp_min_c,
-          lat,
-          lon,
-          fuente_url
-        ) VALUES (
-          ${row.conaguaStationId},
-          ${row.fechaEvento},
-          ${row.estacionNombre},
-          ${row.precipitacionMm},
-          ${row.evaporacionMm},
-          ${row.tempMaxC},
-          ${row.tempMinC},
-          ${row.lat},
-          ${row.lon},
-          ${SOURCE_LABEL}
-        )
-        ON CONFLICT (conagua_station_id, fecha_evento)
-        DO UPDATE SET
-          estacion_nombre = EXCLUDED.estacion_nombre,
-          precipitacion_mm = EXCLUDED.precipitacion_mm,
-          evaporacion_mm = EXCLUDED.evaporacion_mm,
-          temp_max_c = EXCLUDED.temp_max_c,
-          temp_min_c = EXCLUDED.temp_min_c,
-          lat = EXCLUDED.lat,
-          lon = EXCLUDED.lon,
-          fuente_url = EXCLUDED.fuente_url,
-          ingested_at = NOW()
-      `),
-    );
+  const latestRow = await sql(`
+    SELECT MAX(fecha_evento)::text AS max_fecha
+    FROM rainfall_conagua
+    WHERE conagua_station_id = '26139'
+  `);
+  const latestDate = latestRow[0]?.max_fecha ?? null;
+  const endDate = getYesterdayIsoDate();
+
+  let openMeteoRows = [];
+  if (latestDate && latestDate < endDate) {
+    openMeteoRows = await fetchOpenMeteoRows(addDays(latestDate, 1), endDate);
+    await upsertRows(sql, openMeteoRows);
   }
 
   const afterCountResult = await sql(`
     SELECT
       COUNT(*)::int AS count,
       MIN(fecha_evento)::text AS min_fecha,
-      MAX(fecha_evento)::text AS max_fecha
+      MAX(fecha_evento)::text AS max_fecha,
+      COUNT(*) FILTER (WHERE fuente_url = '${OPEN_METEO_SOURCE_URL}')::int AS open_meteo_count
     FROM rainfall_conagua
     WHERE conagua_station_id = '26139'
   `);
@@ -171,11 +257,13 @@ async function main() {
   console.log(
     JSON.stringify(
       {
-        importedRows: rows.length,
+        importedCsvRows: rows.length,
+        importedOpenMeteoRows: openMeteoRows.length,
         tableCountBefore: beforeCount,
         stationCountAfter: summary.count ?? 0,
         minFecha: summary.min_fecha ?? null,
         maxFecha: summary.max_fecha ?? null,
+        openMeteoRowsInDb: summary.open_meteo_count ?? 0,
       },
       null,
       2,
