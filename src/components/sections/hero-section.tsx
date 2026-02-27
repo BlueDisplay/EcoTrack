@@ -17,9 +17,18 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-teal-200/20 to-green-200/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
         <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-gradient-to-r from-emerald-300/25 to-green-300/25 rounded-full blur-2xl animate-float" style={{ animationDelay: '-1.5s' }} />
+
+        {/* Floating Particle Dots */}
+        <div className="particle-1 absolute top-[15%] left-[10%] w-3 h-3 bg-emerald-400/40 rounded-full" />
+        <div className="particle-2 absolute top-[30%] right-[15%] w-2 h-2 bg-green-500/30 rounded-full" />
+        <div className="particle-3 absolute bottom-[35%] left-[20%] w-2.5 h-2.5 bg-teal-400/35 rounded-full" />
+        <div className="particle-4 absolute top-[60%] right-[25%] w-2 h-2 bg-emerald-500/25 rounded-full" />
+        <div className="particle-1 absolute bottom-[20%] left-[60%] w-3 h-3 bg-green-400/30 rounded-full" style={{ animationDelay: '-2s' }} />
+        <div className="particle-2 absolute top-[20%] right-[40%] w-1.5 h-1.5 bg-teal-500/40 rounded-full" style={{ animationDelay: '-4s' }} />
+
         {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="h-full w-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(34, 197, 94, 0.3) 1px, transparent 0)', backgroundSize: '50px 50px' }} />
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="h-full w-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(34, 197, 94, 0.4) 1px, transparent 0)', backgroundSize: '50px 50px' }} />
         </div>
       </div>
 
@@ -27,9 +36,10 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
         <div className="max-w-6xl mx-auto">
           {/* Logo and Badge */}
           <div className="mb-8 animate-fade-in-up">
-            <div className="inline-flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100">
+            <div className="inline-flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100 gradient-border">
               <StockIcon name="globe" className="w-8 h-8" />
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold text-xl">EcoTrack</span>
+              <div className="h-5 w-px bg-gray-300" />
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-sm font-medium text-gray-600">En Vivo</span>
@@ -39,7 +49,7 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
 
           {/* Main Headline */}
           <h1 className="font-bold text-3xl md:text-5xl lg:text-6xl mb-6 animate-fade-in-up leading-tight" style={{ animationDelay: '0.2s' }}>
-            <span className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent text-shimmer">
               Cartografía Participativa
             </span>
             <br />
@@ -92,6 +102,22 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-8 left-1/2 scroll-indicator">
+        <button
+          onClick={onExploreMap}
+          className="flex flex-col items-center gap-2 text-emerald-600/60 hover:text-emerald-600 transition-colors"
+          aria-label="Desplazarse hacia abajo"
+        >
+          <span className="text-xs font-medium tracking-widest uppercase">Explorar</span>
+          <div className="flex flex-col items-center gap-0.5">
+            <svg className="w-5 h-5 scroll-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </button>
       </div>
     </section>
   );

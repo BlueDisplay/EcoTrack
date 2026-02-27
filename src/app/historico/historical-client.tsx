@@ -16,9 +16,11 @@ interface HistoricalClientProps {
 }
 
 export function HistoricalClient({ data, stats, source }: HistoricalClientProps) {
-  const sourceName = source === 'open_meteo'
-    ? 'Open-Meteo Archive API'
-    : 'CONAGUA (Estación 26139)';
+  const sourceName = source === 'neon_db'
+    ? 'Neon PostgreSQL (`rainfall_conagua`)'
+    : source === 'open_meteo'
+      ? 'Open-Meteo Archive API'
+      : 'CONAGUA (Estación 26139)';
 
   return (
     <div className="space-y-8">

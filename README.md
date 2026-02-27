@@ -57,7 +57,7 @@ Motor de detección automática de contaminación visual powered by **Roboflow**
 <td width="50%">
 
 ### 📊 Historial Meteorológico
-Gráficas interactivas de precipitación anual y mensual con **Recharts**, alimentadas por la serie oficial de **CONAGUA** o fallback a **Open-Meteo**. Permite analizar patrones climáticos históricos.
+Gráficas interactivas de precipitación anual y mensual con **Recharts**. Si `DATABASE_URL` está configurado, usan la tabla `rainfall_conagua` en **Neon** como fuente principal; en entornos sin base de datos, usan la serie oficial de **CONAGUA** (CSV local) con fallback a **Open-Meteo**.
 
 </td>
 <td width="50%">
@@ -284,7 +284,8 @@ La app arranca en **http://localhost:3000** con Turbopack habilitado.
 
 | Valor | Comportamiento |
 |-------|----------------|
-| `auto` *(default)* | Usa CSV local de CONAGUA; si está vacío o desactualizado, cambia automáticamente a Open-Meteo |
+| `auto` *(default)* | Si `DATABASE_URL` está configurado, usa `rainfall_conagua` en Neon como fuente principal. Si no hay DB, usa CSV local de CONAGUA y, si está vacío o desactualizado, cambia a Open-Meteo |
+| `db` / `neon` | Solo tabla `rainfall_conagua` en Neon |
 | `conagua` | Solo CSV local de CONAGUA |
 | `open-meteo` | Solo API climática [Open-Meteo](https://open-meteo.com/) |
 

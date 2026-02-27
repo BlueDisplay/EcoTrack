@@ -23,17 +23,23 @@ interface HistoricalSectionProps {
 
 export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
   const activeSource = source ?? 'conagua_csv';
-  const sourceName = activeSource === 'open_meteo'
-    ? 'Open-Meteo Archive API'
-    : 'Servicio Meteorológico Nacional (CONAGUA)';
+  const sourceName = activeSource === 'neon_db'
+    ? 'Neon PostgreSQL (`rainfall_conagua`)'
+    : activeSource === 'open_meteo'
+      ? 'Open-Meteo Archive API'
+      : 'Servicio Meteorológico Nacional (CONAGUA)';
 
   if (!stats) {
+    const emptyMessage = source === 'neon_db'
+      ? 'No hay registros en la tabla `rainfall_conagua` de Neon. Cargue datos para mostrar estas gráficas.'
+      : 'Datos históricos no disponibles. Verifique la fuente de lluvia configurada.';
+
     return (
       <section id="historico" className="py-24 bg-gradient-to-br from-green-50 via-white to-emerald-50">
         <div className="container mx-auto px-6 text-center">
           <h2 className="section-title">Histórico de Lluvias</h2>
           <p className="text-slate-500 mt-4">
-            Datos históricos no disponibles. Verifique la fuente CONAGUA o configure fallback climático.
+            {emptyMessage}
           </p>
         </div>
       </section>
@@ -62,10 +68,8 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
       severity: y.total > avgAnnual * 1.3 ? 'alto' as const : 'medio' as const,
     }));
 
-  // Get last update date from newest year in data
+  // Track the newest year represented in the loaded series
   const lastYear = stats.yearlyTotals.length > 0 ? stats.yearlyTotals[stats.yearlyTotals.length - 1].year : new Date().getFullYear();
-  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  const lastUpdate = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
   // Short month name helper
   const shortMonth = (m: string) => m.substring(0, 3);
@@ -77,7 +81,9 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
         <div className="text-center mb-16 slide-up">
           <h2 className="section-title">Histórico de Lluvias</h2>
           <p className="section-subtitle">
-            {activeSource === 'conagua_csv'
+            {activeSource === 'neon_db'
+              ? 'Datos históricos de precipitación leídos directamente desde la tabla `rainfall_conagua` en Neon.'
+              : activeSource === 'conagua_csv'
               ? 'Datos históricos de precipitación en Hermosillo desde 1961, basados en registros oficiales de CONAGUA (Estación 26139 - Hermosillo II).'
               : 'Datos históricos de precipitación en Hermosillo desde 1961, obtenidos de Open-Meteo Archive API para la zona urbana de Hermosillo.'}
           </p>
@@ -205,7 +211,22 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
               <StockIcon name="document" className="w-5 h-5" />
               <h4 className="font-bold text-slate-800">Fuente de Datos</h4>
             </div>
-            {activeSource === 'conagua_csv' ? (
+            {activeSource === 'neon_db' ? (
+              <>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Proveedor:</strong> {sourceName}
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Tabla:</strong> `public.rainfall_conagua`
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Estación filtrada:</strong> 26139 - HERMOSILLO II (DGE)
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Notas:</strong> La gráfica refleja exactamente los registros disponibles en la base de datos para esa estación.
+                </p>
+              </>
+            ) : activeSource === 'conagua_csv' ? (
               <>
                 <p className="text-sm text-slate-600 mb-2">
                   <strong>Proveedor:</strong> {sourceName}
@@ -231,7 +252,7 @@ export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
               </>
             )}
             <p className="text-xs text-slate-500">
-              Fuente activa: {sourceName} | Última actualización: {lastUpdate}
+              Fuente activa: {sourceName} | Último año disponible: {lastYear}
             </p>
           </div>
         </div>

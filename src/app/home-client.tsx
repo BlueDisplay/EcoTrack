@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useScrollReveal } from '@/lib/hooks/use-scroll-reveal';
 import { HeroSection } from '@/components/sections/hero-section';
 import { MapSection } from '@/components/sections/map-section';
 import { StatsSection } from '@/components/sections/stats-section';
@@ -114,6 +115,9 @@ export function HomeClient({ csvEvents, historicalStats, rainfallSource }: HomeC
       toast.info('Haz clic en el mapa para seleccionar la ubicacion del reporte');
     }, 500);
   };
+
+  // Activate scroll-reveal animations
+  useScrollReveal();
 
   return (
     <>

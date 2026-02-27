@@ -157,7 +157,7 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
     <section id="estadisticas" className="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       <div className="container mx-auto px-6 max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12 slide-up">
+        <div className="text-center mb-12 reveal">
           <h2 className="section-title">Estadísticas en Tiempo Real</h2>
           <p className="section-subtitle">Análisis de patrones y distribución de incidentes hidrometeorológicos en Hermosillo.</p>
         </div>
@@ -194,7 +194,7 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
         </div>
 
         {/* ── KPI Cards ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 reveal">
           <KpiCard icon="pin" label="Incidentes" value={totalFiltered} color="text-emerald-600" bg="bg-emerald-100" />
           <KpiCard icon="shield" label="Alto Riesgo" value={`${pctHigh}%`} sub={`${highRisk} de ${totalFiltered}`} color="text-red-600" bg="bg-red-100" />
           <KpiCard icon="map" label="Colonias" value={uniqueColonias} color="text-blue-600" bg="bg-blue-100" />

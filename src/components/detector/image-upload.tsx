@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, useRef } from 'react';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 interface ImageUploadProps {
   onFileSelect: (file: File) => void;
@@ -36,10 +37,14 @@ export function ImageUpload({ onFileSelect, preview }: ImageUploadProps) {
   return (
     <div
       className={`
-        relative border-2 border-dashed rounded-xl p-8 text-center transition-all
-        ${isDragging ? 'border-emerald-400 bg-emerald-50' : 'border-gray-300 hover:border-emerald-300 hover:bg-gray-50'}
-        ${preview ? 'p-2' : 'p-8'}
+        relative border-2 border-dashed rounded-2xl text-center transition-all duration-300 cursor-pointer
+        ${isDragging
+          ? 'border-emerald-400 bg-emerald-50 scale-[1.02] shadow-lg shadow-emerald-500/10'
+          : 'border-gray-300 hover:border-emerald-300 hover:bg-emerald-50/30'
+        }
+        ${preview ? 'p-3' : 'p-10'}
       `}
+      onClick={() => !preview && inputRef.current?.click()}
       onDragOver={(e) => {
         e.preventDefault();
         setIsDragging(true);
@@ -48,45 +53,54 @@ export function ImageUpload({ onFileSelect, preview }: ImageUploadProps) {
       onDrop={handleDrop}
     >
       {preview ? (
-        <div className="relative">
+        <div className="relative group">
           <img
             src={preview}
             alt="Preview"
-            className="w-full rounded-lg object-contain max-h-80"
+            className="w-full rounded-xl object-contain max-h-80 transition-all duration-300 group-hover:brightness-95"
           />
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors shadow-sm"
-            aria-label="Cambiar imagen"
-          >
-            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </button>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-xl flex items-center justify-center">
+            <button
+              onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+              className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg hover:bg-white transition-all duration-300 text-sm font-medium text-gray-700 flex items-center gap-2"
+              aria-label="Cambiar imagen"
+            >
+              <StockIcon name="camera" className="w-4 h-4" />
+              Cambiar imagen
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
+        <div className="space-y-4">
+          <div className={`mx-auto w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            isDragging ? 'bg-emerald-200 scale-110' : 'bg-emerald-100'
+          }`}>
+            <StockIcon name="upload" className={`w-9 h-9 transition-all duration-300 ${isDragging ? 'text-emerald-700 scale-110' : 'text-emerald-500'}`} />
           </div>
           <div>
-            <p className="text-gray-700 font-medium">
-              Arrastra una imagen aquí
+            <p className="text-gray-700 font-semibold text-lg">
+              {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen aquí'}
             </p>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-400 text-sm mt-2">
               o{' '}
               <button
-                onClick={() => inputRef.current?.click()}
-                className="text-emerald-600 hover:text-emerald-700 underline"
+                onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+                className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2"
               >
                 selecciona un archivo
               </button>
             </p>
-            <p className="text-gray-300 text-xs mt-2">
-              JPG, PNG o WebP — optimización automática para análisis IA
-            </p>
+          </div>
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+            <span className="flex items-center gap-1">
+              <StockIcon name="camera" className="w-3.5 h-3.5" />
+              JPG, PNG, WebP
+            </span>
+            <span className="w-1 h-1 rounded-full bg-gray-300" />
+            <span className="flex items-center gap-1">
+              <StockIcon name="lab" className="w-3.5 h-3.5" />
+              Optimización automática
+            </span>
           </div>
         </div>
       )}

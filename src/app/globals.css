@@ -800,3 +800,255 @@ body::before {
   .btn:active, .card:active { transform: scale(0.98); }
   button, .btn, a { min-height: 44px; min-width: 44px; }
 }
+
+/* ==========================================================================
+   Scroll-Reveal Animations (Intersection Observer)
+   ========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delays for child elements */
+.stagger-1 { transition-delay: 0.1s; }
+.stagger-2 { transition-delay: 0.2s; }
+.stagger-3 { transition-delay: 0.3s; }
+.stagger-4 { transition-delay: 0.4s; }
+.stagger-5 { transition-delay: 0.5s; }
+
+/* ==========================================================================
+   Navbar Scroll Effect
+   ========================================================================== */
+
+.navbar-scrolled {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(16, 185, 129, 0.08);
+}
+
+.navbar-scrolled .navbar-inner {
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+
+/* ==========================================================================
+   Scroll Indicator (Hero)
+   ========================================================================== */
+
+@keyframes scrollBounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+  40% { transform: translateY(-8px) translateX(-50%); }
+  60% { transform: translateY(-4px) translateX(-50%); }
+}
+
+.scroll-indicator {
+  animation: scrollBounce 2.5s ease infinite;
+}
+
+@keyframes scrollChevron {
+  0% { opacity: 0; transform: translateY(-4px); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+.scroll-chevron {
+  animation: scrollChevron 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   Loading Progress Bar
+   ========================================================================== */
+
+@keyframes loadProgress {
+  0% { width: 0%; }
+  20% { width: 25%; }
+  50% { width: 60%; }
+  80% { width: 85%; }
+  100% { width: 100%; }
+}
+
+.loading-progress-bar {
+  animation: loadProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.loading-step {
+  animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   Gradient Border Effect
+   ========================================================================== */
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6, #22c55e);
+  background-size: 300% 300%;
+  animation: gradientShift 4s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ==========================================================================
+   Number Badge (About Section)
+   ========================================================================== */
+
+.number-badge {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* ==========================================================================
+   Enhanced Tooltip (Recharts override)
+   ========================================================================== */
+
+.recharts-default-tooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(34, 197, 94, 0.15) !important;
+  padding: 12px 16px !important;
+}
+
+/* ==========================================================================
+   Mobile Nav Glass
+   ========================================================================== */
+
+.mobile-nav-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   Hero Gradient Text Shimmer
+   ========================================================================== */
+
+@keyframes textShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.text-shimmer {
+  background-size: 200% auto;
+  animation: textShimmer 4s linear infinite;
+}
+
+/* ==========================================================================
+   Particle Dots (Hero Background)
+   ========================================================================== */
+
+@keyframes particleFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  25% { transform: translate(30px, -40px) scale(1.2); opacity: 0.6; }
+  50% { transform: translate(-20px, -80px) scale(0.8); opacity: 0.4; }
+  75% { transform: translate(40px, -40px) scale(1.1); opacity: 0.5; }
+}
+
+@keyframes particleFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  33% { transform: translate(-40px, -60px) scale(1.3); opacity: 0.5; }
+  66% { transform: translate(30px, -30px) scale(0.9); opacity: 0.3; }
+}
+
+.particle-1 { animation: particleFloat1 8s ease-in-out infinite; }
+.particle-2 { animation: particleFloat2 10s ease-in-out infinite; }
+.particle-3 { animation: particleFloat1 12s ease-in-out infinite reverse; }
+.particle-4 { animation: particleFloat2 9s ease-in-out infinite reverse; }
+
+/* ==========================================================================
+   Footer Glow Effect
+   ========================================================================== */
+
+.footer-glow {
+  position: relative;
+}
+
+.footer-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), rgba(34, 197, 94, 0.8), rgba(16, 185, 129, 0.5), transparent);
+}

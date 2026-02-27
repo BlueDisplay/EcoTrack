@@ -2,11 +2,11 @@ import { loadBestAvailableRainData, loadHydroEvents } from '@/lib/data/csv-loade
 import { computeHistoricalStats } from '@/lib/data/historical-stats';
 import { HomeClient } from './home-client';
 
-// Load CSV data server-side at request time
+// Load server-side data at request time
 export default async function HomePage() {
   let csvEvents: ReturnType<typeof loadHydroEvents> = [];
   let historicalStats: ReturnType<typeof computeHistoricalStats> | null = null;
-  let rainfallSource: 'conagua_csv' | 'open_meteo' | null = null;
+  let rainfallSource: 'neon_db' | 'conagua_csv' | 'open_meteo' | null = null;
 
   try {
     csvEvents = loadHydroEvents();
@@ -16,9 +16,9 @@ export default async function HomePage() {
 
   try {
     const rainData = await loadBestAvailableRainData();
+    rainfallSource = rainData.source;
     if (rainData.records.length > 0) {
       historicalStats = computeHistoricalStats(rainData.records);
-      rainfallSource = rainData.source;
     }
   } catch (e) {
     console.error('Failed to load historical rain data:', e);

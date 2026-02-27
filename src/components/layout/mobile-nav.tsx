@@ -21,7 +21,7 @@ export function MobileNav() {
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 safe-area-bottom">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 mobile-nav-glass z-30 safe-area-bottom">
       <div className="flex justify-around items-center py-2">
         {NAV_ITEMS.map((item, i) => {
           if (item.special) {
@@ -32,7 +32,7 @@ export function MobileNav() {
                 className="flex flex-col items-center -mt-6"
                 aria-label="Añadir reporte"
               >
-                <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-full p-3.5 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-full p-3.5 shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105 active:scale-95">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                   </svg>
@@ -44,7 +44,7 @@ export function MobileNav() {
             <button
               key={i}
               onClick={() => handleClick(item.scrollTo)}
-              className="flex flex-col items-center gap-0.5 px-2 py-1 text-gray-500 hover:text-emerald-600 transition-colors"
+              className="flex flex-col items-center gap-0.5 px-2 py-1 text-gray-500 hover:text-emerald-600 active:text-emerald-700 transition-colors active:scale-95"
             >
               <span className="text-lg">
                 <StockIcon name={item.icon} className="w-5 h-5" />

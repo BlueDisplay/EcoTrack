@@ -4,6 +4,9 @@
 import Papa from 'papaparse';
 import { readFileSync } from 'fs';
 import path from 'path';
+import { asc, eq } from 'drizzle-orm';
+import { db, isDbConfigured } from '@/lib/db';
+import { rainfallConagua } from '@/lib/db/schema';
 
 const MONTH_NAMES_ES = [
   'Enero',
@@ -31,6 +34,8 @@ const HERMOSILLO_COORDS = {
   latitude: 29.072967,
   longitude: -110.955919,
 };
+
+const HERMOSILLO_CONAGUA_STATION_ID = '26139';
 
 export interface HistoricalRainRecord {
   año: number;
@@ -61,7 +66,7 @@ export interface HydroEvent {
   [key: string]: unknown;
 }
 
-export type RainfallDataSource = 'conagua_csv' | 'open_meteo';
+export type RainfallDataSource = 'neon_db' | 'conagua_csv' | 'open_meteo';
 
 type RawHistoricalRainRecord = Record<string, unknown> & {
   año?: number | string;
@@ -248,20 +253,60 @@ export async function loadOpenMeteoRainData(options: {
 }
 
 /**
+ * Load historical rainfall data from the application's primary Neon table.
+ * When DATABASE_URL is configured, this becomes the source of truth.
+ */
+async function loadDatabaseRainData(): Promise<HistoricalRainRecord[]> {
+  if (!isDbConfigured()) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      fecha: rainfallConagua.fechaEvento,
+      precipitacionMm: rainfallConagua.precipitacionMm,
+    })
+    .from(rainfallConagua)
+    .where(eq(rainfallConagua.conaguaStationId, HERMOSILLO_CONAGUA_STATION_ID))
+    .orderBy(asc(rainfallConagua.fechaEvento));
+
+  return rows
+    .map((row) =>
+      normalizeHistoricalRow({
+        fecha: row.fecha,
+        precipitacion_mm: row.precipitacionMm,
+      }),
+    )
+    .filter((row): row is HistoricalRainRecord => row !== null);
+}
+
+/**
  * Priority:
- * 1) RAINFALL_SOURCE=open-meteo -> Open-Meteo only
- * 2) RAINFALL_SOURCE=conagua -> CSV only
- * 3) auto (default) -> CSV first, then Open-Meteo fallback
+ * 1) In auto mode, if DATABASE_URL is configured, Neon DB is the primary source
+ * 2) RAINFALL_SOURCE=db|neon -> Neon DB only
+ * 3) RAINFALL_SOURCE=open-meteo -> Open-Meteo only
+ * 4) RAINFALL_SOURCE=conagua -> CSV only
+ * 5) auto (default) without DB -> CSV first, then Open-Meteo fallback
  */
 export async function loadBestAvailableRainData(): Promise<{
   records: HistoricalRainRecord[];
   source: RainfallDataSource | null;
 }> {
   const sourcePref = (process.env.RAINFALL_SOURCE ?? 'auto').toLowerCase();
+  const forceDatabase = ['db', 'database', 'neon', 'neon_db'].includes(sourcePref);
   const forceOpenMeteo = sourcePref === 'open-meteo' || sourcePref === 'open_meteo';
   const forceConagua = sourcePref === 'conagua' || sourcePref === 'conagua_csv';
   let csvRecords: HistoricalRainRecord[] = [];
   let csvSourceShouldBeUsed = false;
+
+  if (forceDatabase || (!forceOpenMeteo && !forceConagua && isDbConfigured())) {
+    try {
+      const dbRecords = await loadDatabaseRainData();
+      return { records: dbRecords, source: 'neon_db' };
+    } catch {
+      return { records: [], source: 'neon_db' };
+    }
+  }
 
   if (!forceOpenMeteo) {
     try {

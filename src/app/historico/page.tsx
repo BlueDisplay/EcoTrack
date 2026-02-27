@@ -14,9 +14,13 @@ export const metadata = {
 async function HistoricalData() {
   const { records: rawData, source } = await loadBestAvailableRainData();
   if (rawData.length === 0) {
+    const message = source === 'neon_db'
+      ? 'La tabla `rainfall_conagua` en Neon no tiene registros. Las gráficas históricas no se muestran hasta cargar datos.'
+      : 'No se pudieron cargar datos de lluvia desde las fuentes configuradas.';
+
     return (
       <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm">
-        No se pudieron cargar datos de lluvia desde CONAGUA ni desde la API climática de respaldo.
+        {message}
       </div>
     );
   }
