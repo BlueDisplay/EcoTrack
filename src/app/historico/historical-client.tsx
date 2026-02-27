@@ -94,9 +94,11 @@ function StatCard({
   icon: StockIconName;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center hover:shadow-md hover:border-emerald-200/50 transition-all duration-300">
       <div className="text-2xl mb-1 flex justify-center">
-        <StockIcon name={icon} className="w-6 h-6" />
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-50 to-green-100 flex items-center justify-center">
+          <StockIcon name={icon} className="w-5 h-5 text-emerald-600" />
+        </div>
       </div>
       <div className="text-lg font-bold text-gray-800">
         <AnimatedCounter value={value} duration={800} />

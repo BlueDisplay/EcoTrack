@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { StockIcon } from '@/components/ui/stock-icon';
 
 const LOADING_STEPS = [
@@ -40,8 +41,8 @@ export function LoadingScreen() {
       <div className="text-center max-w-sm mx-auto px-6">
         {/* Logo */}
         <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/30 mb-5">
-            <StockIcon name="globe" className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-green-600/10 shadow-lg shadow-emerald-500/20 mb-5 border border-emerald-200/30">
+            <Image src="/logo/EcoTrack.png" alt="EcoTrack" width={56} height={56} className="rounded-xl drop-shadow-lg" priority />
           </div>
           <div className="font-bold text-3xl bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             EcoTrack

@@ -12,22 +12,45 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://eco-tracker-seven.vercel.app'),
   title: {
-    default: 'EcoTrack — Cartografía Participativa de Riesgos',
+    default: 'EcoTrack — Cartografia Participativa de Riesgos',
     template: '%s | EcoTrack',
   },
   description:
-    'Plataforma de monitoreo ambiental, detección de contaminación por IA y análisis de datos históricos para Hermosillo, Sonora.',
+    'Plataforma de monitoreo ambiental, deteccion de contaminacion por IA y analisis de datos historicos para Hermosillo, Sonora.',
   keywords: [
     'EcoTrack',
     'medio ambiente',
     'Hermosillo',
     'mapa',
-    'contaminación',
+    'contaminacion',
     'IA',
-    'riesgos hidrometeorológicos',
+    'riesgos hidrometeorologicos',
   ],
   authors: [{ name: 'EcoTrack Team' }],
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
+  openGraph: {
+    title: 'EcoTrack — Cartografia Participativa de Riesgos',
+    description:
+      'Plataforma de ciencia ciudadana para monitoreo colaborativo de riesgos hidrometeorologicos en Hermosillo, Sonora.',
+    url: 'https://eco-tracker-seven.vercel.app',
+    siteName: 'EcoTrack Sonora',
+    images: [{ url: '/icon-512.png', width: 512, height: 512, alt: 'EcoTrack logo' }],
+    locale: 'es_MX',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'EcoTrack — Cartografia Participativa de Riesgos',
+    description:
+      'Monitoreo ambiental colaborativo para Hermosillo, Sonora.',
+    images: ['/icon-512.png'],
+  },
 };
 
 export const viewport: Viewport = {

@@ -45,14 +45,14 @@ export default function AdminPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Panel de Administración
+            Panel de Administracion
           </h1>
           <p className="text-sm text-gray-500">
-            {reports.length} reportes totales · {filtered.length} mostrados
+            {reports.length} reportes totales -- {filtered.length} mostrados
           </p>
         </div>
 

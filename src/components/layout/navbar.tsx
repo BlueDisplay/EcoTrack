@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Mapa Interactivo', icon: 'map' as StockIconName, scrollTo: 'mapa-interactivo' },
-  { href: '/', label: 'Estadísticas', icon: 'chart' as StockIconName, scrollTo: 'estadisticas' },
-  { href: '/', label: 'Histórico', icon: 'clock' as StockIconName, scrollTo: 'historico' },
-  { href: '/detector', label: 'Detector IA', icon: 'camera' as StockIconName },
+  { href: '/', label: 'Mapa', icon: 'map' as StockIconName, scrollTo: 'mapa-interactivo' },
+  { href: '/', label: 'Estadisticas', icon: 'chart' as StockIconName, scrollTo: 'estadisticas' },
+  { href: '/', label: 'Historico', icon: 'clock' as StockIconName, scrollTo: 'historico' },
+  { href: '/detector', label: 'EcoScan', icon: 'camera' as StockIconName, highlight: true },
   { href: '/', label: 'Acerca de', icon: 'shield' as StockIconName, scrollTo: 'acerca-de' },
 ];
 
@@ -48,8 +49,8 @@ export function Navbar() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className={`transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-100'} group-hover:rotate-12`}>
-            <StockIcon name="globe" className="w-8 h-8" />
+          <div className={`transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-100'} group-hover:scale-110`}>
+            <Image src="/logo/EcoTrack.png" alt="EcoTrack" width={36} height={36} className="rounded-lg drop-shadow-md" priority />
           </div>
           <span className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             EcoTrack
@@ -57,18 +58,25 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-6">
           {NAV_ITEMS.map((item, i) => (
             <Link
               key={`${item.href}-${i}`}
               href={item.scrollTo ? `/#${item.scrollTo}` : item.href}
               onClick={(e) => handleNavClick(item, e)}
-              className="nav-link text-slate-700 hover:text-emerald-600 font-medium transition-all duration-300 relative group"
+              className={`nav-link font-medium transition-all duration-300 relative group inline-flex items-center gap-1.5 ${
+                item.highlight
+                  ? 'text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200/60 hover:bg-emerald-100 hover:border-emerald-300'
+                  : 'text-slate-700 hover:text-emerald-600'
+              }`}
             >
-              <span className="mr-2 inline-flex align-middle group-hover:scale-110 transition-transform duration-300">
+              <span className="inline-flex align-middle group-hover:scale-110 transition-transform duration-300">
                 <StockIcon name={item.icon} className="w-4 h-4" />
               </span>
               {item.label}
+              {item.highlight && (
+                <span className="ml-1 text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-full leading-none">IA</span>
+              )}
             </Link>
           ))}
 

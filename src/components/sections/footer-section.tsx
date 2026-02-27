@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { StockIcon } from '@/components/ui/stock-icon';
 
 export function FooterSection() {
@@ -27,7 +28,7 @@ export function FooterSection() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/10">
-                <StockIcon name="globe" className="w-7 h-7" />
+                <Image src="/logo/EcoTrack.png" alt="EcoTrack" width={36} height={36} className="rounded-lg drop-shadow-md" />
               </div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                 EcoTrack Sonora

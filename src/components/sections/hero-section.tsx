@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { StockIcon } from '@/components/ui/stock-icon';
 
 interface HeroSectionProps {
@@ -35,9 +36,9 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
       <div className="relative z-10 container mx-auto px-6 text-center">
         <div className="max-w-6xl mx-auto">
           {/* Logo and Badge */}
-          <div className="mb-8 animate-fade-in-up">
+          <div className="mb-6 animate-fade-in-up">
             <div className="inline-flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100 gradient-border">
-              <StockIcon name="globe" className="w-8 h-8" />
+              <Image src="/logo/EcoTrack.png" alt="EcoTrack" width={40} height={40} className="rounded-lg drop-shadow-md" priority />
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold text-xl">EcoTrack</span>
               <div className="h-5 w-px bg-gray-300" />
               <div className="flex items-center gap-2">
@@ -45,6 +46,14 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
                 <span className="text-sm font-medium text-gray-600">En Vivo</span>
               </div>
             </div>
+          </div>
+
+          {/* Location Badge */}
+          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <span className="inline-flex items-center gap-2 bg-emerald-100/70 backdrop-blur-sm text-emerald-800 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200/50">
+              <StockIcon name="pin" className="w-3.5 h-3.5" />
+              Hermosillo, Sonora, Mexico
+            </span>
           </div>
 
           {/* Main Headline */}
@@ -98,7 +107,10 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
               <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <button onClick={onAddReport} className="hero-cta-secondary group">
-              Añadir Reporte
+              <span className="inline-flex items-center gap-2">
+                <StockIcon name="camera" className="w-5 h-5" />
+                Reportar Incidente
+              </span>
             </button>
           </div>
         </div>

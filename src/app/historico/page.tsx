@@ -3,6 +3,7 @@ import { loadBestAvailableRainData } from '@/lib/data/csv-loader';
 import { computeHistoricalStats } from '@/lib/data/historical-stats';
 import { HistoricalClient } from './historical-client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 export const revalidate = 3600; // ISR: revalidate every hour
 
@@ -32,13 +33,17 @@ async function HistoricalData() {
 
 export default function HistoricoPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Historial Meteorológico
+        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200/50 mb-4">
+          <StockIcon name="cloud" className="w-4 h-4" />
+          Datos CONAGUA
+        </div>
+        <h1 className="text-3xl font-bold text-gray-800">
+          Historial Meteorologico
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Datos históricos de precipitación pluvial — Hermosillo, Sonora
+        <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">
+          Series historicas de precipitacion pluvial e indicadores climaticos — Hermosillo, Sonora
         </p>
       </div>
 
