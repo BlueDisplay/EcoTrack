@@ -44,9 +44,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={font.variable}>
-      <body className="font-sans antialiased bg-gray-50 text-gray-900">
+      <body className="font-sans text-slate-700 antialiased">
         <Navbar />
-        <main className="min-h-[calc(100dvh-3.5rem)] pb-16 md:pb-0">
+        <main className="min-h-[calc(100dvh-4rem)] pb-16 lg:pb-0">
           {children}
         </main>
         <MobileNav />

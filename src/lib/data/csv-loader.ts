@@ -13,17 +13,24 @@ export interface HistoricalRainRecord {
 }
 
 export interface HydroEvent {
-  id: string;
-  fecha: string;
+  id_evento?: string;
+  id?: string;
+  fecha_evento?: string;
+  fecha?: string;
   titulo: string;
-  descripcion: string;
+  medio?: string;
+  url_noticia?: string;
+  direccion_detectada?: string;
+  direccion?: string;
+  colonia?: string;
   lat: number;
   lon: number;
+  mm_lluvia_reportados?: number;
+  mm_lluvia?: number;
+  afectaciones_reportadas?: string;
+  descripcion?: string;
   gravedad: string;
-  mm_lluvia: number;
-  tipo_evento: string;
-  medio: string;
-  url_noticia: string;
+  tipo_evento?: string;
   [key: string]: unknown;
 }
 
