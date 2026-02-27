@@ -1,21 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 
 export interface LabelOption {
   value: string;
   label: string;
-  emoji: string;
+  icon: StockIconName;
   color: string;
 }
 
 export const DETECTION_LABELS: LabelOption[] = [
-  { value: 'basura', label: 'Basura / Plástico', emoji: '🗑️', color: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' },
-  { value: 'escombro', label: 'Escombro', emoji: '🧱', color: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200' },
-  { value: 'tire', label: 'Neumático', emoji: '🛞', color: 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200' },
-  { value: 'agua estancada', label: 'Agua Estancada', emoji: '💧', color: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200' },
-  { value: 'contaminacion', label: 'Contaminación', emoji: '☣️', color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200' },
-  { value: 'otro', label: 'Otro', emoji: '📌', color: 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200' },
+  { value: 'basura', label: 'Basura / Plástico', icon: 'close', color: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' },
+  { value: 'escombro', label: 'Escombro', icon: 'grid', color: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200' },
+  { value: 'tire', label: 'Neumático', icon: 'refresh', color: 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200' },
+  { value: 'agua estancada', label: 'Agua Estancada', icon: 'cloud', color: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200' },
+  { value: 'contaminacion', label: 'Contaminación', icon: 'shield', color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200' },
+  { value: 'otro', label: 'Otro', icon: 'pin', color: 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200' },
 ];
 
 interface LabelPickerProps {
@@ -48,7 +49,7 @@ export function LabelPicker({ onSelect, onCancel }: LabelPickerProps) {
               }}
               className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all active:scale-95 ${option.color}`}
             >
-              <span className="text-base">{option.emoji}</span>
+              <StockIcon name={option.icon} className="w-4 h-4" />
               <span>{option.label}</span>
             </button>
           ))}

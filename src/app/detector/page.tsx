@@ -394,7 +394,8 @@ export default function DetectorPage() {
                         </>
                       ) : (
                         <>
-                          🤖 Detector IA
+                          <StockIcon name="lab" className="w-4 h-4" />
+                          Detector IA
                         </>
                       )}
                     </span>
@@ -418,11 +419,11 @@ export default function DetectorPage() {
                   >
                     {drawMode ? (
                       <span className="inline-flex items-center gap-2">
-                        <span className="animate-pulse">✏️</span> Dibujando...
+                        <StockIcon name="target" className="w-4 h-4 animate-pulse" /> Dibujando...
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-2">
-                        ✏️ Anotar Manual
+                        <StockIcon name="target" className="w-4 h-4" /> Anotar Manual
                       </span>
                     )}
                   </button>
@@ -481,7 +482,7 @@ export default function DetectorPage() {
                   <div className="text-sm text-gray-600 font-medium">Total Detectados</div>
                   {totalObjects > 0 && (
                     <div className="text-xs text-gray-400 mt-1">
-                      🤖 {aiDetections.length} · ✏️ {manualAnnotations.length}
+                      IA {aiDetections.length} · Manual {manualAnnotations.length}
                     </div>
                   )}
                 </div>
@@ -556,7 +557,7 @@ export default function DetectorPage() {
               <div className="card p-8 reveal">
                 <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                   <div className="p-2.5 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl shadow-sm">
-                    ✏️
+                    <StockIcon name="target" className="w-5 h-5" />
                   </div>
                   Mis Anotaciones
                   <span className="ml-auto text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">

@@ -109,7 +109,7 @@ export function AnnotationCanvas({
         ctx.fillRect(x, y, w, h);
 
         // Label
-        const sourceTag = isManual ? '✏️ ' : '🤖 ';
+        const sourceTag = isManual ? '[M] ' : '[AI] ';
         const confText = det.confidence >= 1 ? '' : ` ${(det.confidence * 100).toFixed(0)}%`;
         const label = `${sourceTag}${det.class}${confText}`;
         ctx.font = 'bold 12px system-ui, sans-serif';
@@ -356,13 +356,13 @@ export function AnnotationCanvas({
       {/* Badges */}
       <div className="absolute top-2 left-2 flex gap-2">
         {aiCount > 0 && (
-          <span className="bg-cyan-600/80 text-white text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-sm">
-            🤖 {aiCount} IA
+          <span className="bg-cyan-600/80 text-white text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-sm inline-flex items-center gap-1">
+            <img src="/icons/beaker.svg" alt="" className="w-3 h-3 inline brightness-0 invert" /> {aiCount} IA
           </span>
         )}
         {manualCount > 0 && (
-          <span className="bg-emerald-600/80 text-white text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-sm">
-            ✏️ {manualCount} manual{manualCount !== 1 ? 'es' : ''}
+          <span className="bg-emerald-600/80 text-white text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-sm inline-flex items-center gap-1">
+            <img src="/icons/cursor-arrow-rays.svg" alt="" className="w-3 h-3 inline brightness-0 invert" /> {manualCount} manual{manualCount !== 1 ? 'es' : ''}
           </span>
         )}
       </div>

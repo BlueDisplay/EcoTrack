@@ -107,7 +107,7 @@ export function ResultsPanel({
                         ? 'bg-emerald-200 text-emerald-800'
                         : 'bg-cyan-200 text-cyan-800'
                     }`}>
-                      {isManual ? '✏️ MANUAL' : '🤖 IA'}
+                      {isManual ? 'MANUAL' : 'IA'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-400">
