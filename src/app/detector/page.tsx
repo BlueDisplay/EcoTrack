@@ -39,6 +39,7 @@ export default function DetectorPage() {
   const [manualAnnotations, setManualAnnotations] = useState<ManualAnnotation[]>([]);
   const [imageSize, setImageSize] = useState({ width: 640, height: 480 });
   const [location, setLocation] = useState<ExifLocation | null>(null);
+  const [hasExif, setHasExif] = useState(false);
   const [isPreparingFile, setIsPreparingFile] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSavingReport, setIsSavingReport] = useState(false);
@@ -94,11 +95,15 @@ export default function DetectorPage() {
     try {
       const exifData = await extractExifData(file);
       setLocation(exifData);
+      setHasExif(!!exifData);
       if (exifData) {
         toast.info(`Ubicación GPS encontrada: ${exifData.lat.toFixed(4)}, ${exifData.lon.toFixed(4)}`);
+      } else {
+        toast.warning('Imagen sin metadatos de localización — ubica dónde fue tomada en el mapa');
       }
     } catch {
       setLocation(null);
+      setHasExif(false);
     }
 
     try {
@@ -197,6 +202,11 @@ export default function DetectorPage() {
   const handleRemoveAnnotation = useCallback((index: number) => {
     setManualAnnotations((prev) => prev.filter((_, i) => i !== index));
     toast.info('Anotación eliminada');
+  }, []);
+
+  // Manual location from map (when image has no EXIF GPS)
+  const handleManualLocation = useCallback((coords: { lat: number; lon: number }) => {
+    setLocation({ lat: coords.lat, lon: coords.lon });
   }, []);
 
   // Generate PDF (includes both AI + manual — uses annotated canvas image)
@@ -673,14 +683,24 @@ export default function DetectorPage() {
                 <div className="p-2.5 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-xl shadow-sm">
                   <StockIcon name="pin" className="w-5 h-5" />
                 </div>
-                Ubicación GPS
-                {location && (
+                Ubicación
+                {location && hasExif && (
                   <span className="ml-auto text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
-                    {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+                    {location.lat.toFixed(4)}, {location.lon.toFixed(4)} (EXIF)
+                  </span>
+                )}
+                {location && !hasExif && (
+                  <span className="ml-auto text-xs font-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                    {location.lat.toFixed(4)}, {location.lon.toFixed(4)} (manual)
                   </span>
                 )}
               </h3>
-              <DetectionMap location={location} />
+              <DetectionMap
+                location={location}
+                hasImage={!!preview}
+                hasExif={hasExif}
+                onLocationChange={handleManualLocation}
+              />
             </div>
 
             {/* Results Detail Panel */}
