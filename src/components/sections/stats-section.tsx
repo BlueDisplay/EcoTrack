@@ -108,15 +108,19 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
     });
 
     const months = MONTH_LABELS_SHORT.slice(monthStart, monthEnd + 1);
+    const incidentChartData: Array<Record<string, string | number>> = months.map((m) => ({
+      month: m,
+      ...Object.fromEntries(activeYears.map((y) => [y.toString(), incByYM[m]?.[y] || 0])),
+    }));
+
+    const precipChartData: Array<Record<string, string | number>> = months.map((m) => ({
+      month: m,
+      ...Object.fromEntries(activeYears.map((y) => [y.toString(), Math.round(precipByYM[m]?.[y] || 0)])),
+    }));
+
     return {
-      incidentChartData: months.map((m) => ({
-        month: m,
-        ...Object.fromEntries(activeYears.map((y) => [y.toString(), incByYM[m]?.[y] || 0])),
-      })),
-      precipChartData: months.map((m) => ({
-        month: m,
-        ...Object.fromEntries(activeYears.map((y) => [y.toString(), Math.round(precipByYM[m]?.[y] || 0)])),
-      })),
+      incidentChartData,
+      precipChartData,
     };
   }, [allEvents, activeYears, monthStart, monthEnd]);
 
@@ -424,7 +428,7 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
               </button>
             </div>
             {incidentChartData.some((d) =>
-              activeYears.some((y) => (d as unknown as Record<string, number>)[y.toString()] > 0),
+              activeYears.some((y) => Number(d[y.toString()] ?? 0) > 0),
             ) ? (
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={incidentChartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
@@ -470,7 +474,7 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
               </button>
             </div>
             {precipChartData.some((d) =>
-              activeYears.some((y) => (d as unknown as Record<string, number>)[y.toString()] > 0),
+              activeYears.some((y) => Number(d[y.toString()] ?? 0) > 0),
             ) ? (
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={precipChartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>

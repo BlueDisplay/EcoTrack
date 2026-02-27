@@ -51,15 +51,16 @@ export async function POST(request: NextRequest) {
   }
 
   const imageBytes = await file.arrayBuffer();
+  const base64Image = Buffer.from(imageBytes).toString('base64');
   const url = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
+    const timeout = setTimeout(() => controller.abort(), 25_000);
 
     const response = await fetch(url, {
       method: 'POST',
-      body: new Uint8Array(imageBytes),
+      body: base64Image,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       signal: controller.signal,
     });
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
       const errorText = await response.text().catch(() => 'Unknown error');
       return NextResponse.json(
         {
+          detail: `Roboflow error (${response.status}): ${errorText.slice(0, 200)}`,
           message: 'Roboflow returned an error',
           status_code: response.status,
           body: errorText,

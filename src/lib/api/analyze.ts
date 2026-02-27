@@ -25,8 +25,9 @@ export async function analyzeImage(file: File): Promise<AnalysisResult> {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(err.detail || `Analysis failed: ${res.status}`);
+    const err = await res.json().catch(() => null);
+    const msg = err?.detail || err?.message || `Error del servidor (${res.status})`;
+    throw new Error(msg);
   }
 
   return res.json();
