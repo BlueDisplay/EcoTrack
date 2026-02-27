@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       .insert(reports)
       .values({
         id,
+        userId: data.userId,
         titulo: data.titulo,
         lat: data.lat,
         lon: data.lon,
@@ -91,10 +92,16 @@ export async function POST(request: NextRequest) {
         tipoEvento: data.tipoEvento,
         medio: data.medio,
         imagen: data.imagen,
+        fotoBlobKey: data.fotoBlobKey,
+        fotoMime: data.fotoMime,
+        fotoSizeBytes: data.fotoSizeBytes,
         urlNoticia: data.urlNoticia,
         tipoReporte: data.tipoReporte,
         detectadoAi: data.detectadoAi,
         aiConfidence: data.aiConfidence,
+        aiModel: data.aiModel,
+        aiResultJson: data.aiResultJson,
+        conaguaStationId: data.conaguaStationId,
         status: data.status,
       })
       .returning();
@@ -148,7 +155,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const [updated] = await db
       .update(reports)
-      .set({ status: body.status })
+      .set({ status: body.status, updatedAt: new Date() })
       .where(eq(reports.id, body.id))
       .returning();
 

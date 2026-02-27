@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import type { Report } from '@/lib/db/schema';
+import type { Incident } from '@/lib/db/schema';
 
 // ─── Colors ─────────────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 // ─── Severity Pie Chart ─────────────────────────────────────────────────────
 
-export function SeverityChart({ reports }: { reports: Report[] }) {
+export function SeverityChart({ reports }: { reports: Incident[] }) {
   const data = Object.entries(
     reports.reduce(
       (acc, r) => {
@@ -83,7 +83,7 @@ export function SeverityChart({ reports }: { reports: Report[] }) {
 
 // ─── Status Pie Chart ───────────────────────────────────────────────────────
 
-export function StatusChart({ reports }: { reports: Report[] }) {
+export function StatusChart({ reports }: { reports: Incident[] }) {
   const data = Object.entries(
     reports.reduce(
       (acc, r) => {
@@ -132,7 +132,7 @@ export function StatusChart({ reports }: { reports: Report[] }) {
 
 // ─── Colonia Bar Chart ──────────────────────────────────────────────────────
 
-export function ColoniaChart({ reports }: { reports: Report[] }) {
+export function ColoniaChart({ reports }: { reports: Incident[] }) {
   const counts = reports.reduce(
     (acc, r) => {
       const key = r.colonia || 'Sin colonia';

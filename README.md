@@ -18,7 +18,7 @@
 | **EcoScan IA** | Detección automática de contaminación visual usando Roboflow |
 | **Historial Meteorológico** | Gráficas de precipitación anual/mensual con datos de CONAGUA |
 | **Panel Admin** | Gestión de reportes con filtros por estado y acciones rápidas |
-| **Reportes Ciudadanos** | Formulario para crear reportes con ubicación GPS desde el mapa |
+| **Reportes Ciudadanos** | Formulario con ubicación GPS + foto obligatoria (evidencia) |
 | **Generación PDF** | Exportar detecciones de IA como reportes PDF descargables |
 
 ## Stack Tecnológico
@@ -29,7 +29,7 @@
 - **Mapas:** react-leaflet 5 + Leaflet
 - **Gráficas:** Recharts
 - **IA:** Roboflow API (proxy server-side)
-- **Base de Datos:** Drizzle ORM + Neon PostgreSQL (opcional)
+- **Base de Datos:** Drizzle ORM + Neon PostgreSQL
 - **Auth:** NextAuth v5 (JWT + Credentials)
 - **Deploy:** Vercel
 
@@ -86,7 +86,7 @@ npm install
 npm run dev
 ```
 
-La app arranca en `http://localhost:3000`. No necesitas configurar ninguna variable de entorno — Roboflow ya está configurado y la base de datos es opcional.
+La app arranca en `http://localhost:3000`.
 
 ## Deploy en Vercel
 
@@ -102,19 +102,37 @@ npx vercel --prod  # Producción
 1. Importa el repo en [vercel.com/new](https://vercel.com/new)
 2. Framework: **Next.js** (se detecta automáticamente)
 3. Root directory: `.` (raíz)
-4. Agrega la variable de entorno:
+4. Agrega variables de entorno:
 
 | Variable | Valor |
 |----------|-------|
 | `AUTH_SECRET` | resultado de `openssl rand -base64 32` |
+| `ROBOFLOW_API_KEY` | API key de Roboflow |
+| `ROBOFLOW_MODEL` | modelo Roboflow (ej. `visual-pollution-detection-04jk5/3`) |
+| `BLOB_READ_WRITE_TOKEN` | token de Vercel Blob para guardar fotos |
+| `DATABASE_URL` | URL de Neon PostgreSQL |
 
 5. Deploy 🚀
 
-### Variable de entorno opcional
+### Variables de entorno
 
 | Variable | Uso |
 |----------|-----|
-| `DATABASE_URL` | Conectar Neon PostgreSQL para persistencia de reportes |
+| `DATABASE_URL` | Persistencia en Neon (`users`, `reports`, `incidents`, `rainfall_conagua`) |
+| `ROBOFLOW_API_KEY` | Detección IA real en `/api/analyze` |
+| `ROBOFLOW_MODEL` | Selección del modelo de detección |
+| `BLOB_READ_WRITE_TOKEN` | Persistencia de fotos en Vercel Blob |
+
+## Modelo de Datos
+
+| Tabla | Propósito |
+|-------|-----------|
+| `users` | Cuentas y roles de acceso |
+| `reports` | Reportes ciudadanos reales (foto obligatoria + metadata IA) |
+| `incidents` | Incidentes extraídos de noticias |
+| `rainfall_conagua` | Serie oficial de lluvia CONAGUA por estación/fecha |
+
+Columna común para cruces: `conagua_station_id` en `reports`, `incidents` y `rainfall_conagua`.
 
 ## API Endpoints
 
@@ -124,6 +142,9 @@ npx vercel --prod  # Producción
 | `/api/reports` | GET | Listar reportes (query: `?limit=500`) |
 | `/api/reports` | POST | Crear reporte (JSON body) |
 | `/api/reports` | PATCH | Actualizar estado (`{id, status}`) |
+| `/api/incidents` | GET/POST | Consultar o crear incidentes de noticias |
+| `/api/rainfall-conagua` | GET/POST | Consultar o upsert de lluvia CONAGUA |
+| `/api/upload` | POST | Subir foto de reporte (multipart/form-data con `file`) |
 | `/api/analyze` | POST | Detectar contaminación (multipart/form-data con `file`) |
 
 ## Licencia

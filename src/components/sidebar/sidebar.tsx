@@ -1,10 +1,10 @@
 'use client';
 
-import type { Report } from '@/lib/db/schema';
+import type { Incident } from '@/lib/db/schema';
 import { getSeverityConfig, getStatusConfig, formatDate, timeAgo } from '@/lib/utils';
 
 interface SidebarProps {
-  selectedIncident: Report | null;
+  selectedIncident: Incident | null;
   totalReports: number;
   onClose: () => void;
 }
@@ -48,7 +48,7 @@ function IncidentDetails({
   incident,
   onClose,
 }: {
-  incident: Report;
+  incident: Incident;
   onClose: () => void;
 }) {
   const severity = getSeverityConfig(incident.gravedad);
@@ -80,19 +80,19 @@ function IncidentDetails({
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
           {status.label}
         </span>
-        {incident.detectadoAi && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-            🤖 IA {incident.aiConfidence ? `${(incident.aiConfidence * 100).toFixed(0)}%` : ''}
+        {incident.medio && (
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+            📰 {incident.medio}
           </span>
         )}
       </div>
 
       {/* Details grid */}
       <div className="space-y-3 text-sm">
-        {incident.descripcion && (
+        {incident.afectacionesReportadas && (
           <div>
-            <p className="text-gray-500 text-xs font-medium mb-1">Descripción</p>
-            <p className="text-gray-700">{incident.descripcion}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1">Afectaciones</p>
+            <p className="text-gray-700">{incident.afectacionesReportadas}</p>
           </div>
         )}
 
@@ -103,22 +103,22 @@ function IncidentDetails({
               <p className="text-gray-700">{incident.colonia}</p>
             </div>
           )}
-          {incident.direccion && (
+          {incident.direccionDetectada && (
             <div>
               <p className="text-gray-500 text-xs font-medium">Dirección</p>
-              <p className="text-gray-700">{incident.direccion}</p>
+              <p className="text-gray-700">{incident.direccionDetectada}</p>
             </div>
           )}
-          {incident.tipoEvento && (
-            <div>
-              <p className="text-gray-500 text-xs font-medium">Tipo</p>
-              <p className="text-gray-700">{incident.tipoEvento}</p>
-            </div>
-          )}
-          {incident.mmLluvia != null && (
+          {incident.mmLluviaReportados != null && (
             <div>
               <p className="text-gray-500 text-xs font-medium">Precipitación</p>
-              <p className="text-gray-700">{incident.mmLluvia} mm</p>
+              <p className="text-gray-700">{incident.mmLluviaReportados} mm</p>
+            </div>
+          )}
+          {incident.autora && (
+            <div>
+              <p className="text-gray-500 text-xs font-medium">Autora</p>
+              <p className="text-gray-700">{incident.autora}</p>
             </div>
           )}
         </div>
@@ -137,15 +137,11 @@ function IncidentDetails({
           <span>{incident.createdAt ? timeAgo(incident.createdAt) : ''}</span>
         </div>
 
-        {/* Image */}
-        {incident.imagen && (
-          <div className="mt-3">
-            <img
-              src={incident.imagen}
-              alt={incident.titulo}
-              className="w-full rounded-lg object-cover max-h-48"
-              loading="lazy"
-            />
+        {/* Notes */}
+        {incident.notas && (
+          <div>
+            <p className="text-gray-500 text-xs font-medium mb-1">Notas</p>
+            <p className="text-gray-600 text-sm">{incident.notas}</p>
           </div>
         )}
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ReportFormData } from '@/lib/schemas/report';
 import { createReport } from '@/lib/api/reports';
+import { uploadReportImage } from '@/lib/storage/upload';
 
 interface ReportFormProps {
   lat: number;
@@ -21,22 +22,36 @@ export function ReportForm({ lat, lon, onSuccess, onCancel }: ReportFormProps) {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const photo = formData.get('foto') as File | null;
 
-    const data: ReportFormData = {
-      titulo: formData.get('titulo') as string,
-      lat,
-      lon,
-      colonia: (formData.get('colonia') as string) || undefined,
-      direccion: (formData.get('direccion') as string) || undefined,
-      gravedad: (formData.get('gravedad') as ReportFormData['gravedad']) || undefined,
-      descripcion: (formData.get('descripcion') as string) || undefined,
-      tipoEvento: (formData.get('tipoEvento') as string) || undefined,
-      tipoReporte: 'ciudadano',
-      detectadoAi: false,
-      status: 'enviado',
-    };
+    if (!photo || photo.size === 0) {
+      setError('La foto del incidente es obligatoria');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
+      const uploaded = await uploadReportImage(photo);
+
+      const data: ReportFormData = {
+        titulo: formData.get('titulo') as string,
+        lat,
+        lon,
+        colonia: (formData.get('colonia') as string) || undefined,
+        direccion: (formData.get('direccion') as string) || undefined,
+        gravedad: (formData.get('gravedad') as ReportFormData['gravedad']) || undefined,
+        descripcion: (formData.get('descripcion') as string) || undefined,
+        tipoEvento: (formData.get('tipoEvento') as string) || undefined,
+        medio: 'ciudadano',
+        imagen: uploaded.url,
+        fotoBlobKey: uploaded.blobKey || undefined,
+        fotoMime: uploaded.mime,
+        fotoSizeBytes: uploaded.size,
+        tipoReporte: 'ciudadano',
+        detectadoAi: false,
+        status: 'enviado',
+      };
+
       await createReport(data as Record<string, unknown>);
       onSuccess();
     } catch (err) {
@@ -160,6 +175,24 @@ export function ReportForm({ lat, lon, onSuccess, onCancel }: ReportFormProps) {
           placeholder="Describe la situación con detalle..."
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none"
         />
+      </div>
+
+      {/* Mandatory photo */}
+      <div>
+        <label htmlFor="foto" className="block text-sm font-medium text-gray-700 mb-1">
+          Foto del incidente *
+        </label>
+        <input
+          id="foto"
+          name="foto"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          required
+          className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-emerald-700 hover:file:bg-emerald-100"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Obligatorio para validar el reporte. Formatos: JPG, PNG, WebP (max 10 MB).
+        </p>
       </div>
 
       {/* Error */}

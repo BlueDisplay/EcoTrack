@@ -8,8 +8,8 @@ import { AboutSection } from '@/components/sections/about-section';
 import { HistoricalSection } from '@/components/sections/historical-section';
 import { FooterSection } from '@/components/sections/footer-section';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { fetchReports } from '@/lib/api/reports';
-import type { Report } from '@/lib/db/schema';
+import { fetchIncidents } from '@/lib/api/incidents';
+import type { Incident } from '@/lib/db/schema';
 import type { HydroEvent } from '@/lib/data/csv-loader';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
 import { toast } from 'sonner';
@@ -22,59 +22,59 @@ interface HomeClientProps {
 }
 
 export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
-  const [reports, setReports] = useState<Report[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarView, setSidebarView] = useState<SidebarView>('welcome');
   const [formCoords, setFormCoords] = useState<{ lat: number; lon: number } | null>(null);
   const mapRef = useRef<HTMLElement | null>(null);
 
-  // Merge CSV events into Report[] for the map
-  const csvAsReports: Report[] = csvEvents.map((ev) => ({
+  // Merge CSV events into Incident[] for the map
+  const csvAsIncidents: Incident[] = csvEvents.map((ev) => ({
     id: ev.id_evento || ev.id || `csv-${Math.random().toString(36).slice(2)}`,
-    fechaEvento: ev.fecha_evento || ev.fecha || null,
+    fechaEvento: ev.fecha_evento || ev.fecha || new Date().toISOString().split('T')[0],
+    fechaPublicacion: null,
     titulo: ev.titulo || '',
-    direccion: ev.direccion_detectada || ev.direccion || null,
-    colonia: ev.colonia || null,
-    gravedad: ev.gravedad || 'medio',
-    descripcion: ev.afectaciones_reportadas || ev.descripcion || null,
-    mmLluvia: ev.mm_lluvia_reportados ?? ev.mm_lluvia ?? null,
-    tipoEvento: ev.tipo_evento || 'inundacion',
     medio: ev.medio || null,
-    imagen: null,
-    urlNoticia: ev.url_noticia || null,
-    tipoReporte: 'historico',
-    detectadoAi: false,
-    aiConfidence: null,
-    status: 'atendido',
+    autora: null,
+    urlNoticia: ev.url_noticia || `https://csv-event-${Math.random().toString(36).slice(2)}`,
+    direccionDetectada: ev.direccion_detectada || ev.direccion || null,
+    colonia: ev.colonia || null,
+    urlMaps: null,
     lat: Number(ev.lat) || 29.07,
     lon: Number(ev.lon) || -110.96,
+    mmLluviaReportados: ev.mm_lluvia_reportados ?? ev.mm_lluvia ?? null,
+    afectacionesReportadas: ev.afectaciones_reportadas || ev.descripcion || null,
+    gravedad: ev.gravedad || 'medio',
+    notas: null,
+    conaguaStationId: null,
+    status: 'atendido',
     createdAt: ev.fecha_evento ? new Date(ev.fecha_evento) : new Date(),
   }));
 
-  const allReports = [...csvAsReports, ...reports];
+  const allIncidents = [...csvAsIncidents, ...incidents];
 
   // Compute unique colonia count
   const coloniaCount = new Set(
-    allReports.map((r) => r.colonia).filter(Boolean),
+    allIncidents.map((r) => r.colonia).filter(Boolean),
   ).size;
 
-  // Load DB reports
-  const loadReports = useCallback(async () => {
+  // Load DB incidents
+  const loadIncidents = useCallback(async () => {
     try {
-      const data = await fetchReports();
-      setReports(data);
+      const data = await fetchIncidents();
+      setIncidents(data);
     } catch {
       // DB might not be configured — that's OK, we still have CSV data
     }
   }, []);
 
   useEffect(() => {
-    loadReports();
-  }, [loadReports]);
+    loadIncidents();
+  }, [loadIncidents]);
 
   // Handlers
-  const handleMarkerClick = (report: Report) => {
-    setSelectedId(report.id);
+  const handleMarkerClick = (incident: Incident) => {
+    setSelectedId(incident.id);
     setSidebarView('details');
   };
 
@@ -92,7 +92,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
   const handleFormSuccess = () => {
     setSidebarView('welcome');
     setFormCoords(null);
-    loadReports();
+    loadIncidents();
     toast.success('Reporte enviado correctamente');
   };
 
@@ -124,7 +124,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
 
       {/* Hero Section */}
       <HeroSection
-        totalReports={allReports.length}
+        totalReports={allIncidents.length}
         coloniaCount={coloniaCount}
         onExploreMap={scrollToMap}
         onAddReport={handleAddReport}
@@ -132,7 +132,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
 
       {/* Map Section */}
       <MapSection
-        reports={allReports}
+        incidents={allIncidents}
         selectedId={selectedId}
         sidebarView={sidebarView}
         formCoords={formCoords}
@@ -145,10 +145,10 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
       />
 
       {/* Statistics Section */}
-      <StatsSection reports={reports} csvEvents={csvEvents} />
+      <StatsSection incidents={incidents} csvEvents={csvEvents} />
 
       {/* About Section */}
-      <AboutSection totalReports={allReports.length} coloniaCount={coloniaCount} />
+      <AboutSection totalReports={allIncidents.length} coloniaCount={coloniaCount} />
 
       {/* Section Divider */}
       <div className="section-divider container mx-auto px-6" />

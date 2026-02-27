@@ -16,7 +16,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import type { Report } from '@/lib/db/schema';
+import type { Incident } from '@/lib/db/schema';
 import type { HydroEvent } from '@/lib/data/csv-loader';
 
 // ─── Colors ─────────────────────────────────────────────────────────────────
@@ -38,15 +38,15 @@ const SEVERITY_LABELS: Record<string, string> = {
 // ─── Stats Section ──────────────────────────────────────────────────────────
 
 interface StatsSectionProps {
-  reports: Report[];
+  incidents: Incident[];
   csvEvents: HydroEvent[];
 }
 
-export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
+export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
   const [timePeriod, setTimePeriod] = useState('30');
 
-  // Merge CSV events with DB reports for richer data
-  const allEvents = [...csvEvents.map(csvToReport), ...reports];
+  // Merge CSV events with DB incidents for richer data
+  const allEvents = [...csvEvents.map(csvToIncident), ...incidents];
 
   // Filter events based on timePeriod for temporal chart
   const now = new Date();
@@ -344,31 +344,31 @@ export function StatsSection({ reports, csvEvents }: StatsSectionProps) {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function csvToReport(ev: HydroEvent): Report {
+function csvToIncident(ev: HydroEvent): Incident {
   return {
     id: ev.id_evento || ev.id || `csv-${Math.random()}`,
-    fechaEvento: ev.fecha_evento || ev.fecha || null,
+    fechaEvento: ev.fecha_evento || ev.fecha || new Date().toISOString().split('T')[0],
+    fechaPublicacion: null,
     titulo: ev.titulo || '',
-    direccion: ev.direccion_detectada || ev.direccion || null,
-    colonia: ev.colonia || null,
-    gravedad: ev.gravedad || 'medio',
-    descripcion: ev.afectaciones_reportadas || ev.descripcion || null,
-    mmLluvia: ev.mm_lluvia_reportados || ev.mm_lluvia || null,
-    tipoEvento: ev.tipo_evento || 'inundacion',
     medio: ev.medio || null,
-    imagen: null,
-    urlNoticia: ev.url_noticia || null,
-    tipoReporte: 'historico',
-    detectadoAi: false,
-    aiConfidence: null,
-    status: 'atendido',
+    autora: null,
+    urlNoticia: ev.url_noticia || `https://csv-event-${Math.random()}`,
+    direccionDetectada: ev.direccion_detectada || ev.direccion || null,
+    colonia: ev.colonia || null,
+    urlMaps: null,
     lat: Number(ev.lat) || 29.07,
     lon: Number(ev.lon) || -110.96,
+    mmLluviaReportados: ev.mm_lluvia_reportados || ev.mm_lluvia || null,
+    afectacionesReportadas: ev.afectaciones_reportadas || ev.descripcion || null,
+    gravedad: ev.gravedad || 'medio',
+    notas: null,
+    conaguaStationId: null,
+    status: 'atendido',
     createdAt: ev.fecha_evento ? new Date(ev.fecha_evento) : new Date(),
   };
 }
 
-function getTemporalData(events: Report[]) {
+function getTemporalData(events: Incident[]) {
   const byMonth: Record<string, { reportes: number; mmLluvia: number }> = {};
 
   events.forEach((ev) => {
@@ -379,7 +379,7 @@ function getTemporalData(events: Report[]) {
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (!byMonth[key]) byMonth[key] = { reportes: 0, mmLluvia: 0 };
     byMonth[key].reportes++;
-    byMonth[key].mmLluvia += ev.mmLluvia || 0;
+    byMonth[key].mmLluvia += ev.mmLluviaReportados || 0;
   });
 
   const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];

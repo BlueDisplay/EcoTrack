@@ -9,8 +9,8 @@ export const maxDuration = 30;
 export async function POST(request: NextRequest) {
   if (!ROBOFLOW_API_KEY) {
     return NextResponse.json(
-      { detail: 'ROBOFLOW_API_KEY no configurada en el servidor' },
-      { status: 503 },
+      { detail: 'Server not configured: missing ROBOFLOW_API_KEY' },
+      { status: 501 },
     );
   }
 

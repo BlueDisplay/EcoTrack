@@ -6,8 +6,10 @@ import { ImageUpload } from '@/components/detector/image-upload';
 import { DetectionCanvas } from '@/components/detector/detection-canvas';
 import { ResultsPanel } from '@/components/detector/results-panel';
 import { analyzeImage, type Detection, type AnalysisResult } from '@/lib/api/analyze';
+import { createReport } from '@/lib/api/reports';
 import { extractExifData, type ExifLocation } from '@/lib/exif/extract';
 import { generateDetectionPDF } from '@/lib/pdf/generate';
+import { uploadReportImage } from '@/lib/storage/upload';
 import { toast } from 'sonner';
 
 // Dynamic import for the mini-map (Leaflet = client only)
@@ -26,6 +28,7 @@ export default function DetectorPage() {
   const [imageSize, setImageSize] = useState({ width: 640, height: 480 });
   const [location, setLocation] = useState<ExifLocation | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSavingReport, setIsSavingReport] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // Handle file selection
@@ -92,6 +95,47 @@ export default function DetectorPage() {
 
     toast.success('Reporte PDF generado');
   }, [preview, detections, location, currentFile]);
+
+  const handleSaveReport = useCallback(async () => {
+    if (!currentFile || detections.length === 0) return;
+
+    setIsSavingReport(true);
+    try {
+      const uploaded = await uploadReportImage(currentFile);
+      const topDetection = detections.reduce(
+        (best, curr) => (curr.confidence > best.confidence ? curr : best),
+        detections[0],
+      );
+      const maxConfidence = topDetection?.confidence ?? 0;
+
+      await createReport({
+        titulo: `Detección IA: ${topDetection?.class || 'contaminacion'}`,
+        lat: location?.lat ?? 29.072967,
+        lon: location?.lon ?? -110.955919,
+        gravedad: maxConfidence >= 0.85 ? 'alto' : maxConfidence >= 0.6 ? 'medio' : 'bajo',
+        descripcion: `Reporte generado desde EcoScan con ${detections.length} detecciones.`,
+        tipoEvento: 'contaminacion',
+        medio: 'ciudadano',
+        imagen: uploaded.url,
+        fotoBlobKey: uploaded.blobKey || undefined,
+        fotoMime: uploaded.mime,
+        fotoSizeBytes: uploaded.size,
+        tipoReporte: 'ciudadano',
+        detectadoAi: true,
+        aiConfidence: maxConfidence,
+        aiModel: 'visual-pollution-detection-04jk5/3',
+        aiResultJson: { detections },
+        status: 'enviado',
+      });
+
+      toast.success('Reporte guardado en la base de datos');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al guardar reporte';
+      toast.error(message);
+    } finally {
+      setIsSavingReport(false);
+    }
+  }, [currentFile, detections, location]);
 
   // Computed stats
   const totalObjects = detections.length;
@@ -237,6 +281,16 @@ export default function DetectorPage() {
                   className="w-full mt-6 hero-cta-secondary"
                 >
                   📄 Generar Reporte PDF
+                </button>
+              )}
+
+              {detections.length > 0 && (
+                <button
+                  onClick={handleSaveReport}
+                  disabled={isSavingReport || isAnalyzing}
+                  className="w-full mt-3 hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSavingReport ? '💾 Guardando...' : '💾 Guardar Reporte Ciudadano'}
                 </button>
               )}
             </div>

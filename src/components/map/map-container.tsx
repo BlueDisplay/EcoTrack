@@ -11,7 +11,7 @@ import {
   useMap,
 } from 'react-leaflet';
 import L from 'leaflet';
-import type { Report } from '@/lib/db/schema';
+import type { Incident } from '@/lib/db/schema';
 import { getIconBySeverity, fixLeafletDefaultIcon } from '@/lib/map/icons';
 import { getSeverityConfig, getStatusConfig, formatDate } from '@/lib/utils';
 
@@ -20,9 +20,9 @@ import 'leaflet/dist/leaflet.css';
 // ─── Props ──────────────────────────────────────────────────────────────────
 
 interface EcoTrackMapProps {
-  incidents: Report[];
+  incidents: Incident[];
   onMapClick?: (lat: number, lng: number) => void;
-  onMarkerClick?: (report: Report) => void;
+  onMarkerClick?: (incident: Incident) => void;
   selectedId?: string | null;
   onMapReady?: (map: L.Map) => void;
 }
@@ -68,7 +68,7 @@ function IncidentMarker({
   incident,
   onClick,
 }: {
-  incident: Report;
+  incident: Incident;
   onClick?: () => void;
 }) {
   const severity = getSeverityConfig(incident.gravedad);
@@ -98,13 +98,13 @@ function IncidentMarker({
           {incident.colonia && (
             <p className="text-xs text-gray-500">📍 {incident.colonia}</p>
           )}
-          {incident.descripcion && (
+          {incident.afectacionesReportadas && (
             <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-              {incident.descripcion}
+              {incident.afectacionesReportadas}
             </p>
           )}
           <p className="text-xs text-gray-400 mt-1">
-            {formatDate(incident.createdAt)}
+            {formatDate(incident.fechaEvento)}
           </p>
         </div>
       </Popup>

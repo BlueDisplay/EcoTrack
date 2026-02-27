@@ -1,7 +1,14 @@
 // ─── Vercel Blob storage for report images ──────────────────────────────────
 // Client-side: uploads to our API, which forwards to Vercel Blob
 
-export async function uploadReportImage(file: File): Promise<string> {
+export interface UploadedReportImage {
+  url: string;
+  blobKey: string | null;
+  mime: string;
+  size: number;
+}
+
+export async function uploadReportImage(file: File): Promise<UploadedReportImage> {
   // For now, we use a simple upload endpoint
   // Later this can be upgraded to use Vercel Blob's client upload
   const formData = new FormData();
@@ -17,5 +24,10 @@ export async function uploadReportImage(file: File): Promise<string> {
   }
 
   const data = await res.json();
-  return data.url;
+  return {
+    url: data.url as string,
+    blobKey: (data.blobKey as string | null) ?? null,
+    mime: (data.mime as string) || file.type,
+    size: Number(data.size ?? file.size),
+  };
 }

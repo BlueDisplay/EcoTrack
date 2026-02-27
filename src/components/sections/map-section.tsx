@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/sidebar/sidebar';
 import { ReportForm } from '@/components/forms/report-form';
-import type { Report } from '@/lib/db/schema';
+import type { Incident } from '@/lib/db/schema';
 
 const EcoTrackMap = dynamic(
   () => import('@/components/map/map-container').then((m) => m.EcoTrackMap),
@@ -21,11 +21,11 @@ const EcoTrackMap = dynamic(
 type SidebarView = 'welcome' | 'details' | 'form';
 
 interface MapSectionProps {
-  reports: Report[];
+  incidents: Incident[];
   selectedId: string | null;
   sidebarView: SidebarView;
   formCoords: { lat: number; lon: number } | null;
-  onMarkerClick: (report: Report) => void;
+  onMarkerClick: (incident: Incident) => void;
   onMapClick: (lat: number, lon: number) => void;
   onCloseDetails: () => void;
   onFormSuccess: () => void;
@@ -34,7 +34,7 @@ interface MapSectionProps {
 }
 
 export function MapSection({
-  reports,
+  incidents,
   selectedId,
   sidebarView,
   formCoords,
@@ -97,7 +97,7 @@ export function MapSection({
 
   const handleExportCSV = useCallback(() => {
     const headers = ['id', 'titulo', 'colonia', 'gravedad', 'lat', 'lon', 'fecha'];
-    const rows = filteredReports.map((r) => [
+    const rows = filteredIncidents.map((r) => [
       r.id, r.titulo, r.colonia || '', r.gravedad, r.lat, r.lon, r.fechaEvento || '',
     ]);
     const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\\n');
@@ -120,10 +120,10 @@ export function MapSection({
     }
   }, []);
   const selectedIncident = selectedId
-    ? reports.find((r) => r.id === selectedId) || null
+    ? incidents.find((r) => r.id === selectedId) || null
     : null;
 
-  const severityCounts = reports.reduce(
+  const severityCounts = incidents.reduce(
     (acc, r) => {
       const key = (r.gravedad || 'bajo').toLowerCase();
       acc[key] = (acc[key] || 0) + 1;
@@ -133,10 +133,10 @@ export function MapSection({
     { alto: 0, medio: 0, bajo: 0, critico: 0, total: 0 } as Record<string, number>,
   );
 
-  const filteredReports = reports.filter((r) => {
+  const filteredIncidents = incidents.filter((r) => {
     if (activeFilter !== 'all') {
       if (activeFilter === 'ciudadano') {
-        if (r.tipoReporte !== 'ciudadano') return false;
+        return false; // incidents are news-derived, not citizen reports
       } else if ((r.gravedad || 'bajo').toLowerCase() !== activeFilter) return false;
     }
     if (searchText) {
@@ -144,7 +144,7 @@ export function MapSection({
       const match =
         (r.titulo || '').toLowerCase().includes(q) ||
         (r.colonia || '').toLowerCase().includes(q) ||
-        (r.direccion || '').toLowerCase().includes(q);
+        (r.direccionDetectada || '').toLowerCase().includes(q);
       if (!match) return false;
     }
     return true;
@@ -156,7 +156,7 @@ export function MapSection({
         {/* Map Container */}
         <div className="w-full lg:w-3/4 h-3/5 lg:h-full bg-slate-200 shadow-xl overflow-hidden relative">
           <EcoTrackMap
-            incidents={filteredReports}
+            incidents={filteredIncidents}
             onMapClick={onMapClick}
             onMarkerClick={onMarkerClick}
             selectedId={selectedId}
@@ -198,7 +198,7 @@ export function MapSection({
                     ))}
                   </div>
                   <div className="text-xs text-slate-600 pt-2 border-t">
-                    Mostrando {filteredReports.length} de {reports.length} eventos
+                    Mostrando {filteredIncidents.length} de {incidents.length} eventos
                   </div>
                 </div>
               </div>
@@ -272,7 +272,7 @@ export function MapSection({
             ) : (
               <Sidebar
                 selectedIncident={selectedIncident}
-                totalReports={reports.length}
+                totalReports={incidents.length}
                 onClose={onCloseDetails}
               />
             )}
