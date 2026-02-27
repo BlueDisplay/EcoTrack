@@ -99,7 +99,7 @@ export default function DetectorPage() {
       if (exifData) {
         toast.info(`Ubicación GPS encontrada: ${exifData.lat.toFixed(4)}, ${exifData.lon.toFixed(4)}`);
       } else {
-        toast.warning('Imagen sin metadatos de localización — ubica dónde fue tomada en el mapa');
+        toast.warning('Datos EXIF de ubicación no encontrados — localiza en el mapa dónde tomaste la foto para completar el reporte');
       }
     } catch {
       setLocation(null);

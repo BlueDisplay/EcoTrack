@@ -13,8 +13,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  AreaChart,
-  Area,
 } from 'recharts';
 import type { Incident } from '@/lib/db/schema';
 import type { HydroEvent } from '@/lib/data/csv-loader';
@@ -107,10 +105,9 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
   }, [filtered]);
 
   // ── Year×Month charts ─────────────────────────────────────────────────────
-  const { incidentChartData, precipChartData } = useMemo(() => {
+  const incidentChartData = useMemo(() => {
     const incM: Record<string, Record<number, number>> = {};
-    const preM: Record<string, Record<number, number>> = {};
-    MONTH_LABELS.forEach((m) => { incM[m] = {}; preM[m] = {}; });
+    MONTH_LABELS.forEach((m) => { incM[m] = {}; });
 
     allEvents.forEach((ev) => {
       const d = dateOf(ev);
@@ -121,25 +118,18 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
       if (mi < monthStart || mi > monthEnd) return;
       const label = MONTH_LABELS[mi];
       incM[label][y] = (incM[label][y] || 0) + 1;
-      preM[label][y] = (preM[label][y] || 0) + (ev.mmLluviaReportados || 0);
     });
 
     const months = MONTH_LABELS.slice(monthStart, monthEnd + 1);
-    const incidentChartData: Array<Record<string, string | number>> = months.map((m) => ({
+    return months.map<Record<string, string | number>>((m) => ({
       month: m,
       ...Object.fromEntries(activeYears.map((y) => [y.toString(), incM[m]?.[y] || 0])),
     }));
-    const precipChartData: Array<Record<string, string | number>> = months.map((m) => ({
-      month: m,
-      ...Object.fromEntries(activeYears.map((y) => [y.toString(), Math.round(preM[m]?.[y] || 0)])),
-    }));
-    return { incidentChartData, precipChartData };
   }, [allEvents, activeYears, monthStart, monthEnd]);
 
   const yearColor = useCallback((y: number) => YEAR_PALETTE[availableYears.indexOf(y) % YEAR_PALETTE.length], [availableYears]);
 
   const hasInc = incidentChartData.some((d) => activeYears.some((y) => Number(d[y.toString()] ?? 0) > 0));
-  const hasPre = precipChartData.some((d) => activeYears.some((y) => Number(d[y.toString()] ?? 0) > 0));
 
   // ── CSV download ──────────────────────────────────────────────────────────
   const downloadCSV = (data: Record<string, unknown>[], filename: string) => {
@@ -250,31 +240,6 @@ export function StatsSection({ incidents, csvEvents }: StatsSectionProps) {
                 </BarChart>
               </ResponsiveContainer>
             ) : <Empty />}
-          </div>
-
-          {/* Precipitación — full width */}
-          <div className="card p-8 lg:col-span-2 animate-fade-in">
-            <ChartHeader icon="cloud" bg="bg-blue-100" title="Precipitación por Mes" onDl={() => downloadCSV(precipChartData as Record<string, unknown>[], 'precipitacion')} />
-            {hasPre ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={precipChartData} margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
-                  <defs>
-                    {activeYears.map((y) => (
-                      <linearGradient key={y} id={`pg-${y}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={yearColor(y)} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={yearColor(y)} stopOpacity={0.02} />
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} unit=" mm" />
-                  <Tooltip formatter={(v: number) => [`${v} mm`, '']} />
-                  <Legend />
-                  {activeYears.map((y) => <Area key={y} type="monotone" dataKey={y.toString()} name={`${y} (mm)`} stroke={yearColor(y)} fill={`url(#pg-${y})`} strokeWidth={2.5} dot={{ r: 3 }} />)}
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : <div className="flex items-center justify-center h-48 text-slate-400 text-sm">Sin datos de precipitación</div>}
           </div>
         </div>
       </div>
