@@ -4,7 +4,7 @@ import {
   AnnualRainfallChart,
   MonthlyAverageChart,
 } from '@/components/charts/historical-charts';
-import type { HistoricalRainRecord } from '@/lib/data/csv-loader';
+import type { HistoricalRainRecord, RainfallDataSource } from '@/lib/data/csv-loader';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
@@ -12,11 +12,20 @@ import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 interface HistoricalClientProps {
   data: HistoricalRainRecord[];
   stats: HistoricalStats;
+  source: RainfallDataSource | null;
 }
 
-export function HistoricalClient({ data, stats }: HistoricalClientProps) {
+export function HistoricalClient({ data, stats, source }: HistoricalClientProps) {
+  const sourceName = source === 'open_meteo'
+    ? 'Open-Meteo Archive API'
+    : 'CONAGUA (Estación 26139)';
+
   return (
     <div className="space-y-8">
+      <div className="text-center text-xs text-gray-500">
+        Fuente activa: {sourceName}
+      </div>
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard

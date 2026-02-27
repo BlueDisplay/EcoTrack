@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { loadHistoricalRainData } from '@/lib/data/csv-loader';
+import { loadBestAvailableRainData } from '@/lib/data/csv-loader';
 import { computeHistoricalStats } from '@/lib/data/historical-stats';
 import { HistoricalClient } from './historical-client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -12,10 +12,18 @@ export const metadata = {
 };
 
 async function HistoricalData() {
-  const rawData = await loadHistoricalRainData();
+  const { records: rawData, source } = await loadBestAvailableRainData();
+  if (rawData.length === 0) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm">
+        No se pudieron cargar datos de lluvia desde CONAGUA ni desde la API climática de respaldo.
+      </div>
+    );
+  }
+
   const stats = computeHistoricalStats(rawData);
 
-  return <HistoricalClient data={rawData} stats={stats} />;
+  return <HistoricalClient data={rawData} stats={stats} source={source} />;
 }
 
 export default function HistoricoPage() {

@@ -13,19 +13,28 @@ import {
   Legend,
 } from 'recharts';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
+import type { RainfallDataSource } from '@/lib/data/csv-loader';
 import { StockIcon } from '@/components/ui/stock-icon';
 
 interface HistoricalSectionProps {
   stats: HistoricalStats | null;
+  source?: RainfallDataSource | null;
 }
 
-export function HistoricalSection({ stats }: HistoricalSectionProps) {
+export function HistoricalSection({ stats, source }: HistoricalSectionProps) {
+  const activeSource = source ?? 'conagua_csv';
+  const sourceName = activeSource === 'open_meteo'
+    ? 'Open-Meteo Archive API'
+    : 'Servicio Meteorológico Nacional (CONAGUA)';
+
   if (!stats) {
     return (
       <section id="historico" className="py-24 bg-gradient-to-br from-green-50 via-white to-emerald-50">
         <div className="container mx-auto px-6 text-center">
           <h2 className="section-title">Histórico de Lluvias</h2>
-          <p className="text-slate-500 mt-4">Datos históricos no disponibles. Verifique que los archivos CSV estén cargados.</p>
+          <p className="text-slate-500 mt-4">
+            Datos históricos no disponibles. Verifique la fuente CONAGUA o configure fallback climático.
+          </p>
         </div>
       </section>
     );
@@ -68,8 +77,9 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
         <div className="text-center mb-16 slide-up">
           <h2 className="section-title">Histórico de Lluvias</h2>
           <p className="section-subtitle">
-            Datos históricos de precipitación en Hermosillo desde 1961 hasta la fecha,
-            basados en registros oficiales de CONAGUA (Estación 26139 - Hermosillo II).
+            {activeSource === 'conagua_csv'
+              ? 'Datos históricos de precipitación en Hermosillo desde 1961, basados en registros oficiales de CONAGUA (Estación 26139 - Hermosillo II).'
+              : 'Datos históricos de precipitación en Hermosillo desde 1961, obtenidos de Open-Meteo Archive API para la zona urbana de Hermosillo.'}
           </p>
         </div>
 
@@ -195,14 +205,33 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
               <StockIcon name="document" className="w-5 h-5" />
               <h4 className="font-bold text-slate-800">Fuente de Datos</h4>
             </div>
-            <p className="text-sm text-slate-600 mb-2">
-              <strong>Estación Meteorológica:</strong> 26139 - HERMOSILLO II (DGE)
-            </p>
-            <p className="text-sm text-slate-600 mb-2">
-              <strong>Coordenadas:</strong> 29.099°N, -110.954°W | <strong>Altitud:</strong> 221 msnm
-            </p>
+            {activeSource === 'conagua_csv' ? (
+              <>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Proveedor:</strong> {sourceName}
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Estación Meteorológica:</strong> 26139 - HERMOSILLO II (DGE)
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Coordenadas:</strong> 29.099°N, -110.954°W | <strong>Altitud:</strong> 221 msnm
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Proveedor:</strong> {sourceName}
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Punto de consulta:</strong> 29.073°N, -110.956°W (Hermosillo urbano)
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Variable:</strong> precipitación diaria (`precipitation_sum`, mm)
+                </p>
+              </>
+            )}
             <p className="text-xs text-slate-500">
-              Datos proporcionados por el Servicio Meteorológico Nacional (CONAGUA) | Última actualización: {lastUpdate}
+              Fuente activa: {sourceName} | Última actualización: {lastUpdate}
             </p>
           </div>
         </div>

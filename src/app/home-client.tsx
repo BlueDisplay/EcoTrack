@@ -10,7 +10,7 @@ import { FooterSection } from '@/components/sections/footer-section';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { fetchIncidents } from '@/lib/api/incidents';
 import type { Incident } from '@/lib/db/schema';
-import type { HydroEvent } from '@/lib/data/csv-loader';
+import type { HydroEvent, RainfallDataSource } from '@/lib/data/csv-loader';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
 import { toast } from 'sonner';
 
@@ -19,9 +19,10 @@ type SidebarView = 'welcome' | 'details' | 'form';
 interface HomeClientProps {
   csvEvents: HydroEvent[];
   historicalStats: HistoricalStats | null;
+  rainfallSource: RainfallDataSource | null;
 }
 
-export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
+export function HomeClient({ csvEvents, historicalStats, rainfallSource }: HomeClientProps) {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarView, setSidebarView] = useState<SidebarView>('welcome');
@@ -154,7 +155,7 @@ export function HomeClient({ csvEvents, historicalStats }: HomeClientProps) {
       <div className="section-divider container mx-auto px-6" />
 
       {/* Historical Rainfall Section */}
-      <HistoricalSection stats={historicalStats} />
+      <HistoricalSection stats={historicalStats} source={rainfallSource} />
 
       {/* Footer */}
       <FooterSection />

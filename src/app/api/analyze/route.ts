@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const ROBOFLOW_API_KEY = process.env.ROBOFLOW_API_KEY ?? '';
 const ROBOFLOW_MODEL = process.env.ROBOFLOW_MODEL ?? 'visual-pollution-detection-04jk5/3';
 
-// Extend timeout for Roboflow (Vercel Pro only — Hobby caps at 10s)
-export const maxDuration = 30;
+// Extend timeout for Roboflow
+export const maxDuration = 10;
 
 export async function POST(request: NextRequest) {
   if (!ROBOFLOW_API_KEY) {
@@ -83,14 +83,18 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    const isAbort =
+      (error instanceof DOMException && error.name === 'AbortError') ||
+      (error instanceof Error && error.name === 'AbortError');
+    if (isAbort) {
       return NextResponse.json(
-        { detail: 'Roboflow request timed out' },
+        { detail: 'La solicitud a Roboflow excedió el tiempo límite (25 s)' },
         { status: 504 },
       );
     }
+    const errMsg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { detail: 'Roboflow request failed' },
+      { detail: `Fallo al contactar Roboflow: ${errMsg}` },
       { status: 502 },
     );
   }

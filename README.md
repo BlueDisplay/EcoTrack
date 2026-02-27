@@ -111,6 +111,7 @@ npx vercel --prod  # Producción
 | `ROBOFLOW_MODEL` | modelo Roboflow (ej. `visual-pollution-detection-04jk5/3`) |
 | `BLOB_READ_WRITE_TOKEN` | token de Vercel Blob para guardar fotos |
 | `DATABASE_URL` | URL de Neon PostgreSQL |
+| `RAINFALL_SOURCE` | `auto`, `conagua` o `open-meteo` |
 
 5. Deploy
 
@@ -122,6 +123,12 @@ npx vercel --prod  # Producción
 | `ROBOFLOW_API_KEY` | Detección IA real en `/api/analyze` |
 | `ROBOFLOW_MODEL` | Selección del modelo de detección |
 | `BLOB_READ_WRITE_TOKEN` | Persistencia de fotos en Vercel Blob |
+| `RAINFALL_SOURCE` | Estrategia de datos históricos de lluvia (`auto` por defecto) |
+
+`RAINFALL_SOURCE`:
+- `auto`: usa CSV local de CONAGUA y cambia a Open-Meteo si el CSV está vacío o desactualizado.
+- `conagua`: usa solo CSV local.
+- `open-meteo`: usa solo API climática Open-Meteo.
 
 ## Modelo de Datos
 
