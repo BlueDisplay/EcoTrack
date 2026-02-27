@@ -8,9 +8,5 @@
     "src/app/api/analyze/route.ts": {
       "maxDuration": 30
     }
-  },
-  "deploymentProtection": {
-    "production": "none",
-    "preview": "none"
   }
 }
