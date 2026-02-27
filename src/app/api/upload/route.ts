@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const safeName = sanitizeFilename(file.name || 'report.jpg');
     const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
 
-    // Production path (persistent storage)
+    // Production path (persistent storage via Vercel Blob)
     if (blobToken) {
       const blob = await put(`reports/${randomUUID()}-${safeName}`, file, {
         access: 'public',
@@ -68,7 +68,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Development fallback (non-persistent on serverless)
+    // Check if we're on Vercel (read-only filesystem) — can't use local fallback
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        { detail: 'Almacenamiento de imágenes no configurado. El administrador debe agregar BLOB_READ_WRITE_TOKEN en las variables de entorno de Vercel.' },
+        { status: 503 },
+      );
+    }
+
+    // Development fallback (local filesystem — non-persistent on serverless)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const ext = safeName.split('.').pop() || 'jpg';

@@ -52,6 +52,9 @@ export default function DetectorPage() {
   const [drawMode, setDrawMode] = useState(false);
   const [pendingBox, setPendingBox] = useState<Omit<ManualAnnotation, 'class' | 'confidence' | '_manual'> | null>(null);
 
+  // User comment for reports
+  const [userComment, setUserComment] = useState('');
+
   useScrollReveal();
 
   // Merged detections for stats & saving
@@ -233,17 +236,17 @@ export default function DetectorPage() {
 
     setIsSavingReport(true);
     try {
-      // 1. Try to get the annotated canvas image (with bounding boxes drawn on it)
+      // 1. Get annotated canvas image as JPEG (compressed to stay under Vercel 4.5MB body limit)
       let fileForUpload: File | Blob | null = null;
       const annotatedBlob = await canvasRef.current?.toAnnotatedBlob();
-      if (annotatedBlob) {
+      if (annotatedBlob && annotatedBlob.size <= 4_000_000) {
         fileForUpload = new File(
           [annotatedBlob],
-          currentFile.name.replace(/\.\w+$/, '-annotated.png'),
-          { type: 'image/png' },
+          currentFile.name.replace(/\.\w+$/, '-annotated.jpg'),
+          { type: 'image/jpeg' },
         );
       }
-      // Fallback to original image if canvas export fails
+      // Fallback to original optimized image if canvas JPEG is still too large
       if (!fileForUpload) {
         fileForUpload = apiReadyFile ?? currentFile;
       }
@@ -259,12 +262,18 @@ export default function DetectorPage() {
       const hasManual = manualAnnotations.length > 0;
       const sourceLabel = hasAi && hasManual ? 'IA + Manual' : hasAi ? 'IA' : 'Manual';
 
+      // Build description: user comment + auto-generated summary
+      const autoDesc = `Reporte EcoScan (${sourceLabel}): ${allDetections.length} detecciones (${aiDetections.length} IA, ${manualAnnotations.length} manuales).`;
+      const fullDesc = userComment.trim()
+        ? `${userComment.trim()}\n\n${autoDesc}`
+        : autoDesc;
+
       await createReport({
         titulo: `Detección ${sourceLabel}: ${topDetection?.class || 'contaminacion'}`,
         lat: location?.lat ?? 29.072967,
         lon: location?.lon ?? -110.955919,
         gravedad: maxConfidence >= 0.85 ? 'alto' : maxConfidence >= 0.6 ? 'medio' : 'bajo',
-        descripcion: `Reporte generado desde EcoScan (${sourceLabel}) con ${allDetections.length} detecciones (${aiDetections.length} IA, ${manualAnnotations.length} manuales).`,
+        descripcion: fullDesc,
         tipoEvento: 'contaminacion',
         medio: 'ciudadano',
         imagen: uploaded.url,
@@ -280,13 +289,14 @@ export default function DetectorPage() {
       });
 
       toast.success('Reporte guardado en la base de datos');
+      setUserComment('');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al guardar reporte';
       toast.error(message);
     } finally {
       setIsSavingReport(false);
     }
-  }, [apiReadyFile, currentFile, allDetections, aiDetections, manualAnnotations, location]);
+  }, [apiReadyFile, currentFile, allDetections, aiDetections, manualAnnotations, location, userComment]);
 
   // Computed stats
   const avgConfidence = totalObjects > 0
@@ -545,33 +555,51 @@ export default function DetectorPage() {
               )}
 
               {totalObjects > 0 && (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={handleGeneratePDF}
-                    className="hero-cta-secondary text-sm py-3"
-                  >
-                    <StockIcon name="document" className="w-4 h-4 mr-2 inline" />
-                    Generar PDF
-                  </button>
-                  <button
-                    onClick={handleSaveReport}
-                    disabled={isSavingReport || isAnalyzing || isPreparingFile}
-                    className="hero-cta-primary text-sm py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="relative z-10 inline-flex items-center gap-2">
-                      {isSavingReport ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Guardando...
-                        </>
-                      ) : (
-                        <>
-                          <StockIcon name="upload" className="w-4 h-4" />
-                          Guardar Reporte
-                        </>
-                      )}
-                    </span>
-                  </button>
+                <div className="mt-6 space-y-4">
+                  {/* User comments */}
+                  <div>
+                    <label htmlFor="userComment" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Comentarios del reporte
+                    </label>
+                    <textarea
+                      id="userComment"
+                      value={userComment}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      rows={3}
+                      placeholder="Describe lo que observas: tipo de contaminación, nivel de riesgo, contexto del lugar, etc."
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none bg-gray-50 placeholder:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Opcional — se incluirá en la descripción del reporte y en el PDF.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={handleGeneratePDF}
+                      className="hero-cta-secondary text-sm py-3"
+                    >
+                      <StockIcon name="document" className="w-4 h-4 mr-2 inline" />
+                      Generar PDF
+                    </button>
+                    <button
+                      onClick={handleSaveReport}
+                      disabled={isSavingReport || isAnalyzing || isPreparingFile}
+                      className="hero-cta-primary text-sm py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="relative z-10 inline-flex items-center gap-2">
+                        {isSavingReport ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Guardando...
+                          </>
+                        ) : (
+                          <>
+                            <StockIcon name="upload" className="w-4 h-4" />
+                            Guardar Reporte
+                          </>
+                        )}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

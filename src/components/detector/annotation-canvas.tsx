@@ -78,17 +78,18 @@ export const AnnotationCanvas = forwardRef<AnnotationCanvasHandle, AnnotationCan
   const [canvasDims, setCanvasDims] = useState({ width: 640, height: 480 });
 
   // Expose annotated image export methods to parent
+  // Uses JPEG at 0.80 quality to keep file under Vercel's 4.5MB body limit
   useImperativeHandle(ref, () => ({
     toAnnotatedDataURL() {
       const canvas = canvasRef.current;
       if (!canvas) return null;
-      return canvas.toDataURL('image/png');
+      return canvas.toDataURL('image/jpeg', 0.80);
     },
     async toAnnotatedBlob() {
       const canvas = canvasRef.current;
       if (!canvas) return null;
       return new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), 'image/png');
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.80);
       });
     },
   }));
