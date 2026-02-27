@@ -10,6 +10,7 @@ import { createReport } from '@/lib/api/reports';
 import { extractExifData, type ExifLocation } from '@/lib/exif/extract';
 import { generateDetectionPDF } from '@/lib/pdf/generate';
 import { uploadReportImage } from '@/lib/storage/upload';
+import { StockIcon } from '@/components/ui/stock-icon';
 import { toast } from 'sonner';
 
 // Dynamic import for the mini-map (Leaflet = client only)
@@ -46,7 +47,7 @@ export default function DetectorPage() {
       const exifData = await extractExifData(file);
       setLocation(exifData);
       if (exifData) {
-        toast.info(`📍 Ubicación GPS encontrada: ${exifData.lat.toFixed(4)}, ${exifData.lon.toFixed(4)}`);
+        toast.info(`Ubicación GPS encontrada: ${exifData.lat.toFixed(4)}, ${exifData.lon.toFixed(4)}`);
       }
     } catch {
       setLocation(null);
@@ -153,7 +154,7 @@ export default function DetectorPage() {
         {/* Hero Header */}
         <div className="text-center mb-12 slide-up">
           <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100 mb-6">
-            <span className="text-2xl">🤖</span>
+            <StockIcon name="camera" className="w-6 h-6" />
             <span className="font-bold text-xl text-gray-800">Detector IA de Contaminación</span>
           </div>
           <h1 className="font-black text-4xl md:text-6xl mb-4 leading-tight">
@@ -174,7 +175,9 @@ export default function DetectorPage() {
           <div className="max-w-2xl mx-auto">
             <div className="bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-lg">
               <div className="flex items-center">
-                <span className="text-emerald-400 mr-3">🤖</span>
+                <span className="mr-3">
+                  <StockIcon name="lab" className="w-5 h-5" />
+                </span>
                 <div className="text-left">
                   <p className="text-sm font-medium text-emerald-800">
                     <strong>Detección con IA Activa</strong>
@@ -199,7 +202,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-green-100 rounded-lg">
-                  <span className="text-green-600 text-xl">☁️</span>
+                  <StockIcon name="upload" className="w-5 h-5" />
                 </div>
                 Subir Fotografía
               </h3>
@@ -207,7 +210,7 @@ export default function DetectorPage() {
               {currentFile && (
                 <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-green-600">🖼️</span>
+                    <StockIcon name="document" className="w-5 h-5" />
                     <div>
                       <p className="font-medium text-green-800">Archivo seleccionado:</p>
                       <p className="text-sm text-green-600">{currentFile.name}</p>
@@ -221,7 +224,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  <span className="text-blue-600 text-xl">⚙️</span>
+                  <StockIcon name="target" className="w-5 h-5" />
                 </div>
                 Control de Análisis
               </h3>
@@ -232,14 +235,11 @@ export default function DetectorPage() {
                   disabled={!currentFile || isAnalyzing}
                   className="w-full hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isAnalyzing ? '⏳ Analizando...' : '🔍 Analizar con IA'}
+                  {isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
 
                 {/* Status Badge */}
                 <div className={`status-badge ${isAnalyzing ? 'loading' : analysisError ? 'error' : detections.length > 0 ? 'success' : 'info'}`}>
-                  <span>
-                    {isAnalyzing ? 'ℹ️' : analysisError ? '❌' : detections.length > 0 ? '✅' : 'ℹ️'}
-                  </span>
                   {isAnalyzing
                     ? 'Analizando imagen...'
                     : analysisError
@@ -255,7 +255,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
-                  <span className="text-purple-600 text-xl">📊</span>
+                  <StockIcon name="chart" className="w-5 h-5" />
                 </div>
                 Resultados del Análisis
               </h3>
@@ -280,7 +280,7 @@ export default function DetectorPage() {
                   onClick={handleGeneratePDF}
                   className="w-full mt-6 hero-cta-secondary"
                 >
-                  📄 Generar Reporte PDF
+                  Generar Reporte PDF
                 </button>
               )}
 
@@ -290,7 +290,7 @@ export default function DetectorPage() {
                   disabled={isSavingReport || isAnalyzing}
                   className="w-full mt-3 hero-cta-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSavingReport ? '💾 Guardando...' : '💾 Guardar Reporte Ciudadano'}
+                  {isSavingReport ? 'Guardando...' : 'Guardar Reporte Ciudadano'}
                 </button>
               )}
             </div>
@@ -303,7 +303,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-orange-100 rounded-lg">
-                  <span className="text-orange-600 text-xl">👁️</span>
+                  <StockIcon name="eye" className="w-5 h-5" />
                 </div>
                 Imagen con Detecciones
               </h3>
@@ -323,7 +323,9 @@ export default function DetectorPage() {
                   />
                 ) : (
                   <div className="text-center text-gray-400 py-8">
-                    <span className="text-6xl mb-4 block">🖼️</span>
+                    <span className="inline-flex justify-center mb-4">
+                      <StockIcon name="camera" className="w-14 h-14 opacity-50" />
+                    </span>
                     <p className="text-lg">La imagen aparecerá aquí</p>
                     <p className="text-sm">Las detecciones se mostrarán como cajas de colores</p>
                   </div>
@@ -335,7 +337,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-teal-100 rounded-lg">
-                  <span className="text-teal-600 text-xl">📍</span>
+                  <StockIcon name="pin" className="w-5 h-5" />
                 </div>
                 Ubicación GPS
               </h3>
@@ -346,7 +348,7 @@ export default function DetectorPage() {
             <div className="card p-8 slide-up">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
-                  <span className="text-gray-600 text-xl">🔬</span>
+                  <StockIcon name="lab" className="w-5 h-5" />
                 </div>
                 Detalle de Detecciones
               </h3>

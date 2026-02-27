@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 export function LoadingScreen() {
   const [visible, setVisible] = useState(true);
@@ -23,8 +24,8 @@ export function LoadingScreen() {
     >
       <div className="text-center">
         <div className="mb-8 animate-pulse">
-          <span className="text-6xl block mb-4" style={{ filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))' }}>
-            🌍
+          <span className="text-6xl block mb-4 flex justify-center" style={{ filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))' }}>
+            <StockIcon name="globe" className="w-14 h-14" />
           </span>
           <div className="font-bold text-3xl bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             EcoTrack

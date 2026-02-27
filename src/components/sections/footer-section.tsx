@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 export function FooterSection() {
   return (
@@ -19,7 +20,7 @@ export function FooterSection() {
           {/* Brand Section */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">🌍</span>
+              <StockIcon name="globe" className="w-8 h-8" />
               <h3 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                 EcoTrack Sonora
               </h3>
@@ -36,7 +37,7 @@ export function FooterSection() {
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Twitter"
               >
-                𝕏
+                <StockIcon name="document" className="w-5 h-5" />
               </a>
               <a
                 href="https://github.com/badouintec/EcoTracker"
@@ -45,7 +46,7 @@ export function FooterSection() {
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Facebook"
               >
-                f
+                <StockIcon name="users" className="w-5 h-5" />
               </a>
               <a
                 href="https://github.com/badouintec/EcoTracker"
@@ -54,7 +55,7 @@ export function FooterSection() {
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="GitHub"
               >
-                ⌨
+                <StockIcon name="lab" className="w-5 h-5" />
               </a>
               <a
                 href="https://github.com/badouintec/EcoTracker"
@@ -63,7 +64,7 @@ export function FooterSection() {
                 className="text-slate-400 hover:text-emerald-400 transition-colors text-lg p-2 rounded-lg hover:bg-slate-700"
                 aria-label="Telegram"
               >
-                ✈
+                <StockIcon name="camera" className="w-5 h-5" />
               </a>
             </div>
           </div>

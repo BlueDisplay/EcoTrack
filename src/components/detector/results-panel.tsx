@@ -1,6 +1,7 @@
 'use client';
 
 import type { Detection } from '@/lib/api/analyze';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 interface ResultsPanelProps {
   detections: Detection[];
@@ -57,12 +58,14 @@ export function ResultsPanel({
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">
-                {det.class === 'tire'
-                  ? '🛞'
-                  : det.class === 'plastic'
-                    ? '🥤'
-                    : '🧱'}
+              <span className="inline-flex">
+                {det.class === 'tire' ? (
+                  <StockIcon name="target" className="w-5 h-5" />
+                ) : det.class === 'plastic' ? (
+                  <StockIcon name="document" className="w-5 h-5" />
+                ) : (
+                  <StockIcon name="lab" className="w-5 h-5" />
+                )}
               </span>
               <div>
                 <p className="text-sm font-medium text-gray-700">

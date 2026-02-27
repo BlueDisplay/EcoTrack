@@ -7,6 +7,7 @@ import {
 import type { HistoricalRainRecord } from '@/lib/data/csv-loader';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
+import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 
 interface HistoricalClientProps {
   data: HistoricalRainRecord[];
@@ -22,24 +23,24 @@ export function HistoricalClient({ data, stats }: HistoricalClientProps) {
           label="Promedio Anual"
           value={stats.averageAnnualRainfall}
           suffix=" mm"
-          icon="🌧️"
+          icon="cloud"
         />
         <StatCard
           label="Año Más Lluvioso"
           value={stats.maxAnnualRainfall.year}
           subtitle={`${stats.maxAnnualRainfall.amount.toFixed(1)} mm`}
-          icon="⛈️"
+          icon="chart"
         />
         <StatCard
           label="Año Más Seco"
           value={stats.minAnnualRainfall.year}
           subtitle={`${stats.minAnnualRainfall.amount.toFixed(1)} mm`}
-          icon="☀️"
+          icon="clock"
         />
         <StatCard
           label="Total Registros"
           value={data.length}
-          icon="📋"
+          icon="document"
         />
       </div>
 
@@ -79,11 +80,13 @@ function StatCard({
   value: number;
   suffix?: string;
   subtitle?: string;
-  icon: string;
+  icon: StockIconName;
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-2xl mb-1 flex justify-center">
+        <StockIcon name={icon} className="w-6 h-6" />
+      </div>
       <div className="text-lg font-bold text-gray-800">
         <AnimatedCounter value={value} duration={800} />
         {suffix}

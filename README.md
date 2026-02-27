@@ -1,4 +1,4 @@
-# 🌊 EcoTrack — Monitoreo Ambiental Inteligente
+# EcoTrack — Monitoreo Ambiental Inteligente
 
 **Plataforma de monitoreo de inundaciones y contaminación en Hermosillo, Sonora** con detección por IA, mapas interactivos y datos históricos.
 
@@ -112,7 +112,7 @@ npx vercel --prod  # Producción
 | `BLOB_READ_WRITE_TOKEN` | token de Vercel Blob para guardar fotos |
 | `DATABASE_URL` | URL de Neon PostgreSQL |
 
-5. Deploy 🚀
+5. Deploy
 
 ### Variables de entorno
 

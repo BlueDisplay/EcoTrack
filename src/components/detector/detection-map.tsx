@@ -57,7 +57,7 @@ export function DetectionMap({ location }: DetectionMapProps) {
       markerRef.current = L.marker([location.lat, location.lon])
         .addTo(mapRef.current)
         .bindPopup(
-          `📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}`,
+          `${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}`,
         )
         .openPopup();
     }
@@ -67,7 +67,7 @@ export function DetectionMap({ location }: DetectionMapProps) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="p-3 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-gray-700">
-          📍 Ubicación de la Imagen
+          Ubicación de la Imagen
         </h3>
         {location ? (
           <p className="text-xs text-gray-400 font-mono mt-1">

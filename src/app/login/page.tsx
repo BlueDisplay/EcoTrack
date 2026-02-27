@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-800">🔐 Iniciar Sesión</h1>
+          <h1 className="text-xl font-bold text-gray-800">Iniciar Sesión</h1>
           <p className="text-xs text-gray-500 mt-1">Acceso al panel de administración</p>
         </div>
 

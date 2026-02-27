@@ -1,13 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 
 const NAV_ITEMS = [
-  { label: 'Mapa', icon: '🗺️', scrollTo: 'mapa-interactivo' },
-  { label: 'Estadísticas', icon: '📊', scrollTo: 'estadisticas' },
-  { label: '', icon: '+', scrollTo: 'mapa-interactivo', special: true },
-  { label: 'Capas', icon: '📑', scrollTo: 'mapa-interactivo' },
-  { label: 'Histórico', icon: '📈', scrollTo: 'historico' },
+  { label: 'Mapa', icon: 'map' as StockIconName, scrollTo: 'mapa-interactivo' },
+  { label: 'Estadísticas', icon: 'chart' as StockIconName, scrollTo: 'estadisticas' },
+  { label: '', icon: 'target' as StockIconName, scrollTo: 'mapa-interactivo', special: true },
+  { label: 'Capas', icon: 'grid' as StockIconName, scrollTo: 'mapa-interactivo' },
+  { label: 'Histórico', icon: 'clock' as StockIconName, scrollTo: 'historico' },
 ];
 
 export function MobileNav() {
@@ -45,7 +46,9 @@ export function MobileNav() {
               onClick={() => handleClick(item.scrollTo)}
               className="flex flex-col items-center gap-0.5 px-2 py-1 text-gray-500 hover:text-emerald-600 transition-colors"
             >
-              <span className="text-lg">{item.icon}</span>
+              <span className="text-lg">
+                <StockIcon name={item.icon} className="w-5 h-5" />
+              </span>
               <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           );

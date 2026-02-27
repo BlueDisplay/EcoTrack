@@ -2,6 +2,7 @@
 
 import type { Incident } from '@/lib/db/schema';
 import { getSeverityConfig, getStatusConfig, formatDate, timeAgo } from '@/lib/utils';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 interface SidebarProps {
   selectedIncident: Incident | null;
@@ -15,8 +16,9 @@ function WelcomePanel({ totalReports }: { totalReports: number }) {
   return (
     <div className="p-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          🌍 EcoTrack
+        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+          <StockIcon name="globe" className="w-5 h-5" />
+          EcoTrack
         </h2>
         <p className="text-sm text-gray-500">
           Cartografía Participativa de Riesgos Hidrometeorológicos
@@ -82,7 +84,7 @@ function IncidentDetails({
         </span>
         {incident.medio && (
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-            📰 {incident.medio}
+            {incident.medio}
           </span>
         )}
       </div>
@@ -151,9 +153,10 @@ function IncidentDetails({
             href={incident.urlNoticia}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
           >
-            📰 Ver noticia fuente
+            <StockIcon name="document" className="w-4 h-4" />
+            Ver noticia fuente
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>

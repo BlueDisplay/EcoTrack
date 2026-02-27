@@ -1,5 +1,7 @@
 'use client';
 
+import { StockIcon } from '@/components/ui/stock-icon';
+
 interface HeroSectionProps {
   totalReports: number;
   coloniaCount: number;
@@ -26,7 +28,7 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
           {/* Logo and Badge */}
           <div className="mb-8 animate-fade-in-up">
             <div className="inline-flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border border-green-100">
-              <span className="text-3xl animate-glow">🌍</span>
+              <StockIcon name="globe" className="w-8 h-8" />
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold text-xl">EcoTrack</span>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -55,22 +57,22 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12 max-w-4xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <div className="hero-stat-card group">
-              <div className="hero-stat-icon"><span>📍</span></div>
+              <div className="hero-stat-icon"><StockIcon name="pin" className="w-5 h-5" /></div>
               <div className="hero-stat-number">{totalReports}</div>
               <div className="hero-stat-label">Reportes</div>
             </div>
             <div className="hero-stat-card group">
-              <div className="hero-stat-icon"><span>🏠</span></div>
+              <div className="hero-stat-icon"><StockIcon name="users" className="w-5 h-5" /></div>
               <div className="hero-stat-number">{coloniaCount}</div>
               <div className="hero-stat-label">Colonias</div>
             </div>
             <div className="hero-stat-card group">
-              <div className="hero-stat-icon"><span>⏱️</span></div>
+              <div className="hero-stat-icon"><StockIcon name="clock" className="w-5 h-5" /></div>
               <div className="hero-stat-number">24/7</div>
               <div className="hero-stat-label">Monitoreo</div>
             </div>
             <div className="hero-stat-card group">
-              <div className="hero-stat-icon"><span>🛡️</span></div>
+              <div className="hero-stat-icon"><StockIcon name="shield" className="w-5 h-5" /></div>
               <div className="hero-stat-number">100%</div>
               <div className="hero-stat-label">Datos Abiertos</div>
             </div>
@@ -79,11 +81,14 @@ export function HeroSection({ totalReports, coloniaCount, onExploreMap, onAddRep
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
             <button onClick={onExploreMap} className="hero-cta-primary group">
-              <span className="relative z-10">🗺️ Explorar Mapa Interactivo</span>
+              <span className="relative z-10 inline-flex items-center gap-2">
+                <StockIcon name="map" className="w-5 h-5" />
+                Explorar Mapa Interactivo
+              </span>
               <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <button onClick={onAddReport} className="hero-cta-secondary group">
-              ➕ Añadir Reporte
+              Añadir Reporte
             </button>
           </div>
         </div>

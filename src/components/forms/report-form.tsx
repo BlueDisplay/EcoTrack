@@ -137,10 +137,10 @@ export function ReportForm({ lat, lon, onSuccess, onCancel }: ReportFormProps) {
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
         >
           <option value="">Seleccionar...</option>
-          <option value="bajo">🟢 Bajo</option>
-          <option value="medio">🟡 Medio</option>
-          <option value="alto">🟠 Alto</option>
-          <option value="critico">🔴 Crítico</option>
+          <option value="bajo">Bajo</option>
+          <option value="medio">Medio</option>
+          <option value="alto">Alto</option>
+          <option value="critico">Crítico</option>
         </select>
       </div>
 

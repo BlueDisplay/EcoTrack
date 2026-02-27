@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/sidebar/sidebar';
 import { ReportForm } from '@/components/forms/report-form';
+import { StockIcon } from '@/components/ui/stock-icon';
 import type { Incident } from '@/lib/db/schema';
 
 const EcoTrackMap = dynamic(
@@ -168,9 +169,15 @@ export function MapSection({
             {searchOpen && (
               <div className="card p-3 min-w-80">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-emerald-600">🔍</span>
+                  <StockIcon name="search" className="w-4 h-4" />
                   <h4 className="font-semibold text-slate-800">Buscar Eventos</h4>
-                  <button onClick={() => setSearchOpen(false)} className="ml-auto text-slate-500 hover:text-slate-700">✕</button>
+                  <button
+                    onClick={() => setSearchOpen(false)}
+                    className="ml-auto text-slate-500 hover:text-slate-700"
+                    aria-label="Cerrar búsqueda"
+                  >
+                    <StockIcon name="close" className="w-4 h-4" />
+                  </button>
                 </div>
                 <div className="space-y-3">
                   <input
@@ -182,11 +189,11 @@ export function MapSection({
                   />
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { key: 'all', label: '🌐 Todos' },
-                      { key: 'alto', label: '⚠️ Alto Riesgo' },
-                      { key: 'medio', label: '🔶 Medio Riesgo' },
-                      { key: 'bajo', label: 'ℹ️ Bajo Riesgo' },
-                      { key: 'ciudadano', label: '👤 Reportes' },
+                      { key: 'all', label: 'Todos' },
+                      { key: 'alto', label: 'Alto Riesgo' },
+                      { key: 'medio', label: 'Medio Riesgo' },
+                      { key: 'bajo', label: 'Bajo Riesgo' },
+                      { key: 'ciudadano', label: 'Reportes' },
                     ].map((f) => (
                       <button
                         key={f.key}
@@ -208,7 +215,7 @@ export function MapSection({
                 onClick={() => setSearchOpen(true)}
                 className="card p-3 hover:bg-slate-50 transition-colors cursor-pointer hidden md:flex items-center gap-2"
               >
-                <span className="text-emerald-600">🔍</span>
+                <StockIcon name="filter" className="w-4 h-4" />
                 <span className="font-medium text-slate-700">Buscar y Filtrar</span>
               </button>
             )}
@@ -217,7 +224,8 @@ export function MapSection({
           {/* Enhanced Legend Overlay */}
           <div className="absolute bottom-4 left-4 card p-4 text-sm text-slate-700 z-[400] min-w-48">
             <h4 className="font-bold text-slate-800 flex items-center gap-2 mb-3">
-              <span>📊</span> Leyenda
+              <StockIcon name="chart" className="w-4 h-4" />
+              Leyenda
             </h4>
             <div className="space-y-2">
               <LegendItem color="bg-red-500" label="Alto Riesgo" count={severityCounts.alto + (severityCounts.critico || 0)} bgClass="bg-red-100 text-red-800" />
@@ -234,15 +242,21 @@ export function MapSection({
 
           {/* Map Controls Overlay */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 z-[400]">
-            <button onClick={handleCenterMap} className="btn-map-control" title="Centrar mapa en Hermosillo">🎯</button>
-            <button onClick={handleToggleSatellite} className="btn-map-control" title="Alternar vista satelital">{isSatellite ? '🗺️' : '🛰️'}</button>
-            <button onClick={handleFullscreen} className="btn-map-control" title="Pantalla completa">⛶</button>
+            <button onClick={handleCenterMap} className="btn-map-control" title="Centrar mapa en Hermosillo">
+              <StockIcon name="target" className="w-5 h-5" />
+            </button>
+            <button onClick={handleToggleSatellite} className="btn-map-control" title="Alternar vista satelital">
+              <StockIcon name={isSatellite ? 'map' : 'grid'} className="w-5 h-5" />
+            </button>
+            <button onClick={handleFullscreen} className="btn-map-control" title="Pantalla completa">
+              <StockIcon name="eye" className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Weather Info */}
           <div className="absolute top-4 left-4 card p-3 text-sm z-[400] bg-white/90 backdrop-blur-sm hidden md:block" style={{ top: searchOpen ? 'auto' : '1rem', display: searchOpen ? 'none' : undefined }}>
             <div className="flex items-center gap-2 text-slate-700">
-              <span>🌧️</span>
+              <StockIcon name="cloud" className="w-4 h-4" />
               <span className="font-medium">Hermosillo, Son.</span>
             </div>
             <div className="text-xs text-slate-600 mt-1">
@@ -252,10 +266,18 @@ export function MapSection({
 
           {/* Mobile Map Controls */}
           <div className="absolute top-4 left-4 right-4 z-[500] flex gap-2 md:hidden">
-            <button onClick={handleCenterMap} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🎯 Centro</button>
-            <button onClick={handleToggleSatellite} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🛰️ Capas</button>
-            <button onClick={handleFullscreen} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">📍 Completa</button>
-            <button onClick={() => setSearchOpen(!searchOpen)} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">🔍 Buscar</button>
+            <button onClick={handleCenterMap} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+              Centro
+            </button>
+            <button onClick={handleToggleSatellite} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+              Capas
+            </button>
+            <button onClick={handleFullscreen} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+              Completa
+            </button>
+            <button onClick={() => setSearchOpen(!searchOpen)} className="glass-effect rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+              Buscar
+            </button>
           </div>
         </div>
 
@@ -282,14 +304,14 @@ export function MapSection({
           <div className="p-6 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-white">
             <div className="space-y-3">
               <button onClick={onAddReport} className="w-full btn btn-primary">
-                ➕ Añadir Nuevo Reporte
+                Añadir Nuevo Reporte
               </button>
               <div className="flex gap-2">
                 <button onClick={handleExportCSV} className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
-                  📥 Exportar
+                  Exportar
                 </button>
                 <button onClick={handleShare} className="flex-1 text-xs py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
-                  🔗 Compartir
+                  Compartir
                 </button>
               </div>
             </div>

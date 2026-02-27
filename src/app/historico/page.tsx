@@ -23,7 +23,7 @@ export default function HistoricoPage() {
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-800">
-          📊 Historial Meteorológico
+          Historial Meteorológico
         </h1>
         <p className="text-sm text-gray-500 mt-1">
           Datos históricos de precipitación pluvial — Hermosillo, Sonora

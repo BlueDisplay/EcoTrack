@@ -96,7 +96,7 @@ function IncidentMarker({
             </span>
           </div>
           {incident.colonia && (
-            <p className="text-xs text-gray-500">📍 {incident.colonia}</p>
+            <p className="text-xs text-gray-500">{incident.colonia}</p>
           )}
           {incident.afectacionesReportadas && (
             <p className="text-xs text-gray-600 mt-1 line-clamp-2">

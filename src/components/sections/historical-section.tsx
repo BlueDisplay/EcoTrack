@@ -13,6 +13,7 @@ import {
   Legend,
 } from 'recharts';
 import type { HistoricalStats } from '@/lib/data/historical-stats';
+import { StockIcon } from '@/components/ui/stock-icon';
 
 interface HistoricalSectionProps {
   stats: HistoricalStats | null;
@@ -76,7 +77,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="card p-6 text-center hover:shadow-lg transition-shadow">
             <div className="p-3 bg-blue-100 rounded-lg inline-block mb-4">
-              <span className="text-blue-600 text-2xl">📅</span>
+              <StockIcon name="clock" className="w-6 h-6" />
             </div>
             <div className="text-2xl font-bold text-slate-800">{totalYears}+</div>
             <div className="text-sm text-slate-600">Años de Datos</div>
@@ -84,7 +85,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
 
           <div className="card p-6 text-center hover:shadow-lg transition-shadow">
             <div className="p-3 bg-cyan-100 rounded-lg inline-block mb-4">
-              <span className="text-cyan-600 text-2xl">🌧️</span>
+              <StockIcon name="cloud" className="w-6 h-6" />
             </div>
             <div className="text-2xl font-bold text-slate-800">{rainDays.toLocaleString()}</div>
             <div className="text-sm text-slate-600">Días con Lluvia</div>
@@ -92,7 +93,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
 
           <div className="card p-6 text-center hover:shadow-lg transition-shadow">
             <div className="p-3 bg-green-100 rounded-lg inline-block mb-4">
-              <span className="text-green-600 text-2xl">💧</span>
+              <StockIcon name="chart" className="w-6 h-6" />
             </div>
             <div className="text-2xl font-bold text-slate-800">{totalPrecip.toLocaleString()}</div>
             <div className="text-sm text-slate-600">mm Acumulados</div>
@@ -100,7 +101,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
 
           <div className="card p-6 text-center hover:shadow-lg transition-shadow">
             <div className="p-3 bg-red-100 rounded-lg inline-block mb-4">
-              <span className="text-red-600 text-2xl">⚠️</span>
+              <StockIcon name="shield" className="w-6 h-6" />
             </div>
             <div className="text-2xl font-bold text-slate-800">{Math.round(avgAnnual)}</div>
             <div className="text-sm text-slate-600">mm Promedio Anual</div>
@@ -191,7 +192,7 @@ export function HistoricalSection({ stats }: HistoricalSectionProps) {
         <div className="text-center">
           <div className="card p-6 bg-gradient-to-r from-slate-100 to-blue-50 border border-blue-200">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <span className="text-blue-600 text-xl">🗄️</span>
+              <StockIcon name="document" className="w-5 h-5" />
               <h4 className="font-bold text-slate-800">Fuente de Datos</h4>
             </div>
             <p className="text-sm text-slate-600 mb-2">

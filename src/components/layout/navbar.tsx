@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { StockIcon, type StockIconName } from '@/components/ui/stock-icon';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Mapa Interactivo', icon: '🗺️', scrollTo: 'mapa-interactivo' },
-  { href: '/', label: 'Estadísticas', icon: '📊', scrollTo: 'estadisticas' },
-  { href: '/', label: 'Histórico', icon: '📈', scrollTo: 'historico' },
-  { href: '/detector', label: 'Detector IA', icon: '📷' },
-  { href: '/', label: 'Acerca de', icon: 'ℹ️', scrollTo: 'acerca-de' },
+  { href: '/', label: 'Mapa Interactivo', icon: 'map' as StockIconName, scrollTo: 'mapa-interactivo' },
+  { href: '/', label: 'Estadísticas', icon: 'chart' as StockIconName, scrollTo: 'estadisticas' },
+  { href: '/', label: 'Histórico', icon: 'clock' as StockIconName, scrollTo: 'historico' },
+  { href: '/detector', label: 'Detector IA', icon: 'camera' as StockIconName },
+  { href: '/', label: 'Acerca de', icon: 'shield' as StockIconName, scrollTo: 'acerca-de' },
 ];
 
 export function Navbar() {
@@ -29,7 +30,7 @@ export function Navbar() {
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
-          <span className="text-3xl">🌍</span>
+          <StockIcon name="globe" className="w-8 h-8" />
           <span className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
             EcoTrack
           </span>
@@ -44,7 +45,9 @@ export function Navbar() {
               onClick={(e) => handleNavClick(item, e)}
               className="nav-link text-slate-700 hover:text-emerald-600 font-medium transition-all duration-300 relative"
             >
-              <span className="mr-2">{item.icon}</span>
+              <span className="mr-2 inline-flex align-middle">
+                <StockIcon name={item.icon} className="w-4 h-4" />
+              </span>
               {item.label}
             </Link>
           ))}
@@ -79,7 +82,9 @@ export function Navbar() {
               onClick={(e) => handleNavClick(item, e)}
               className="block text-slate-700 hover:text-emerald-600 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-emerald-50"
             >
-              <span className="mr-3">{item.icon}</span>
+              <span className="mr-3 inline-flex align-middle">
+                <StockIcon name={item.icon} className="w-4 h-4" />
+              </span>
               {item.label}
             </Link>
           ))}
